@@ -34,7 +34,7 @@ import {
     ImageWindowLoader,
 } from "./data-grid-types";
 import { SpriteManager, SpriteMap } from "./data-grid-sprites";
-import { useDebouncedMemo, useEventListener } from "../common/utils";
+import { convertToStringArray, getGroupLevelIndexFromRow, useDebouncedMemo, useEventListener } from "../common/utils";
 import clamp from "lodash/clamp.js";
 import makeRange from "lodash/range.js";
 import {
@@ -404,7 +404,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
 
     const mappedColumns = useMappedColumns(columns, freezeColumns);
 
-    // row: -1 === columnHeader, -2 === groupHeader
+    // row: -1 === columnHeader, -2 === groupHeader, -3 === parent group header
     const getBoundsForItem = React.useCallback(
         (canvas: HTMLCanvasElement, col: number, row: number): Rectangle | undefined => {
             const rect = canvas.getBoundingClientRect();
@@ -420,6 +420,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                 row,
                 width,
                 height,
+                groupHeaderLevels,
                 groupHeaderHeight,
                 totalHeaderHeight,
                 cellXOffset,
@@ -487,6 +488,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                 height,
                 enableGroups,
                 headerHeight,
+                groupHeaderLevels,
                 groupHeaderHeight,
                 rows,
                 rowHeight,
@@ -535,16 +537,17 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                 assert(bounds !== undefined);
                 let isEdge = bounds !== undefined && bounds.x + bounds.width - posX <= edgeDetectionBuffer;
 
+                const groupLevelIndex = row <= -2 ? getGroupLevelIndexFromRow(row, groupHeaderLevels) : -1; // count -2 (as leaf group), -3 (parent group), ..
                 const previousCol = col - 1;
                 if (posX - bounds.x <= edgeDetectionBuffer && previousCol >= 0) {
                     isEdge = true;
                     bounds = getBoundsForItem(canvas, previousCol, row);
                     assert(bounds !== undefined);
                     result = {
-                        kind: enableGroups && row === -2 ? groupHeaderKind : headerKind,
+                        kind: enableGroups && row <= -2 ? groupHeaderKind : headerKind,
                         location: [previousCol, row] as any,
                         bounds: bounds,
-                        group: mappedColumns[previousCol].group ?? "",
+                        group: convertToStringArray(mappedColumns[previousCol].group)[groupLevelIndex] ?? "",
                         isEdge,
                         shiftKey,
                         ctrlKey,
@@ -557,8 +560,8 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                     };
                 } else {
                     result = {
-                        kind: enableGroups && row === -2 ? groupHeaderKind : headerKind,
-                        group: mappedColumns[col].group ?? "",
+                        kind: enableGroups && row <= -2 ? groupHeaderKind : headerKind,
+                        group: convertToStringArray(mappedColumns[col].group)[groupLevelIndex] ?? "",
                         location: [col, row] as any,
                         bounds: bounds,
                         isEdge,
@@ -806,7 +809,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
 
     const [hCol, hRow] = hoveredItem ?? [];
     const headerHovered = hCol !== undefined && hRow === -1;
-    const groupHeaderHovered = hCol !== undefined && hRow === -2;
+    const groupHeaderHovered = hCol !== undefined && (hRow ?? 0) <= -2;
     let clickableInnerCellHovered = false;
     let editableBoolHovered = false;
     let cursorOverride: React.CSSProperties["cursor"] | undefined;
@@ -849,9 +852,9 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
     }
 
     const groupHeaderActionForEvent = React.useCallback(
-        (group: string | string[], bounds: Rectangle, localEventX: number, localEventY: number) => {
+        (group: string, bounds: Rectangle, localEventX: number, localEventY: number) => {
             if (getGroupDetails === undefined) return undefined;
-            const groupDesc = getGroupDetails(Array.isArray(group) ? (group[0] ?? "") : (group ?? ""));
+            const groupDesc = getGroupDetails(group ?? "");
             if (groupDesc.actions !== undefined) {
                 const boxes = getActionBoundsForGroup(bounds, groupDesc.actions);
                 for (const [i, box] of boxes.entries()) {
@@ -1062,6 +1065,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             if (canvas === null) return;
 
             const args = getMouseArgsForPosition(canvas, ev.clientX, ev.clientY, ev);
+
             if (!isSameItem(args, hoveredRef.current)) {
                 onItemHovered?.(args);
                 setHoveredItemInfo(

@@ -40,6 +40,7 @@ import type { Theme } from "../common/styles";
 import { blend, withAlpha } from "./color-parser";
 import type { DrawArgs, GetCellRendererCallback, PrepResult } from "./cells/cell-types";
 import { assert, deepEqual } from "../common/support";
+import { convertToStringArray, getGroupLevelIndexFromRow } from "../common/utils";
 
 // Future optimization opportunities
 // - Create a cache of a buffer used to render the full view of a partially displayed column so that when
@@ -527,11 +528,22 @@ function drawGroups(
 ) {
     const xPad = 8;
     const [hCol, hRow] = hovered?.[0] ?? [];
-
+    const hGroupLevelIndex = getGroupLevelIndexFromRow(hRow ?? 0, groupHeaderLevels);
     let finalX = 0;
-    let effectiveGroupheaderHeight = groupHeaderHeight / groupHeaderLevels; // TODO: handle group height based on level
-    walkGroups(effectiveCols, width, translateX, groupHeaderLevels, effectiveGroupheaderHeight, (span, groupName, x, y, w, h) => {
-        if (damage !== undefined && !damage.some(d => d[1] === -2 && d[0] >= span[0] && d[0] <= span[1])) return;
+    let eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels; // TODO: handle group height based on level
+
+    walkGroups(effectiveCols, width, translateX, groupHeaderLevels, eachGroupHeaderHeight, (span, groupName, x, y, w, h, level) => {
+        if (damage !== undefined) {
+            const toRender = damage.some(d => {
+                if (getGroupLevelIndexFromRow(d[1], groupHeaderLevels) === level && d[0] >= span[0] && d[0] <= span[1]) return true;
+            });
+            if (!toRender) return; 
+        }
+
+        console.log('Walk Groups', groupName, level, damage);
+        // if (damage !== undefined && !damage.some(d => d[1] <= -2 && d[0] >= span[0] && d[0] <= span[1])) return;
+        // if (damage !== undefined && !damage.some(d => d[1] <= -2 && d[0] >= span[0] && w < width)) return;
+
         ctx.save();
         ctx.beginPath();
         ctx.rect(x, y, w, h);
@@ -540,13 +552,11 @@ function drawGroups(
         const group = getGroupDetails(groupName);
 
         const groupTheme = group?.overrideTheme === undefined ? theme : { ...theme, ...group.overrideTheme };
-        const isHovered = hRow === -2 && hCol !== undefined && hCol >= span[0] && hCol <= span[1];
+        const isHovered = (level === hGroupLevelIndex) &&  (hRow ?? 0) <= -2 && hCol !== undefined && hCol >= span[0] && hCol <= span[1];
 
         const fillColor = isHovered ? groupTheme.bgHeaderHovered : groupTheme.bgHeader;
-        if (fillColor !== theme.bgHeader) {
-            ctx.fillStyle = fillColor;
-            ctx.fill();
-        }
+        ctx.fillStyle = fillColor;
+        ctx.fill();
 
         ctx.fillStyle = groupTheme.textGroupHeader ?? groupTheme.textHeader;
         if (group !== undefined) {
@@ -557,7 +567,7 @@ function drawGroups(
                     "normal",
                     ctx,
                     drawX + xPad,
-                    y + (effectiveGroupheaderHeight - 20) / 2,
+                    y + (eachGroupHeaderHeight - 20) / 2,
                     20,
                     groupTheme
                 );
@@ -566,7 +576,7 @@ function drawGroups(
             ctx.fillText(
                 group.name,
                 drawX + xPad,
-                y + effectiveGroupheaderHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
+                y + eachGroupHeaderHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
             );
 
             if (group.actions !== undefined && isHovered) {
@@ -575,8 +585,8 @@ function drawGroups(
                 ctx.beginPath();
                 const fadeStartX = actionBoxes[0].x - 10;
                 const fadeWidth = x + w - fadeStartX;
-                ctx.rect(fadeStartX, 0, fadeWidth, effectiveGroupheaderHeight);
-                const grad = ctx.createLinearGradient(fadeStartX, 0, fadeStartX + fadeWidth, 0);
+                ctx.rect(fadeStartX, y, fadeWidth, eachGroupHeaderHeight);
+                const grad = ctx.createLinearGradient(fadeStartX, y, fadeStartX + fadeWidth, 0);
                 const trans = withAlpha(fillColor, 0);
                 grad.addColorStop(0, trans);
                 grad.addColorStop(10 / fadeWidth, fillColor);
@@ -614,33 +624,40 @@ function drawGroups(
             }
         }
 
-        if (x !== 0 && verticalBorder(span[0])) {
-            ctx.beginPath();
-            ctx.moveTo(x + 0.5, 0);
-            ctx.lineTo(x + 0.5, effectiveGroupheaderHeight);
-            ctx.strokeStyle = theme.borderColor;
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
+        // if (x !== 0 && verticalBorder(span[0])) {
+        //     ctx.beginPath();
+        //     ctx.moveTo(x + 0.5, y);
+        //     ctx.lineTo(x + 0.5, y + eachGroupHeaderHeight);
+        //     ctx.strokeStyle = theme.borderColor;
+        //     ctx.lineWidth = 1;
+        //     ctx.stroke();
+        // }
 
         ctx.restore();
-
         finalX = x + w;
     });
-
-    ctx.beginPath();
-    ctx.moveTo(finalX + 0.5, 0);
-    ctx.lineTo(finalX + 0.5, effectiveGroupheaderHeight);
     
     // draw line separators between groups
-    for (let level = 1; level <= groupHeaderLevels; level++) {
-        ctx.moveTo(0, (effectiveGroupheaderHeight * level) + 0.5);
-        ctx.lineTo(width, (effectiveGroupheaderHeight * level) + 0.5);
-    }
-
-    ctx.strokeStyle = theme.borderColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // if (!damage) {
+    //     ctx.beginPath();
+    //     for (let level = 1; level <= groupHeaderLevels; level++) {
+    //         ctx.moveTo(0, (eachGroupHeaderHeight * level) + 0.5);
+    //         ctx.lineTo(width, (eachGroupHeaderHeight * level) + 0.5);
+    //     }
+    //     ctx.strokeStyle = theme.borderColor;
+    //     ctx.lineWidth = 1;
+    //     ctx.stroke();
+    // } else {
+    //     ctx.beginPath();
+    //     damage.forEach(d => {
+    //         const groupLevelIndex = getGroupLevelIndexFromRow(d[1], groupHeaderLevels);
+    //         ctx.moveTo(0, (eachGroupHeaderHeight * groupLevelIndex) + 0.5);
+    //         ctx.lineTo(width, (eachGroupHeaderHeight * groupLevelIndex) + 0.5);
+    //     });
+    //     ctx.strokeStyle = theme.borderColor;
+    //     ctx.lineWidth = 1;
+    //     ctx.stroke();
+    // }
 }
 
 const menuButtonSize = 30;
@@ -760,6 +777,7 @@ export function drawHeader(
     } else {
         ctx.fillStyle = fillStyle;
     }
+
     ctx.fillText(
         c.title,
         drawX,
@@ -819,14 +837,18 @@ function drawGridHeaders(
     const totalHeaderHeight = headerHeight + groupHeaderHeight;
     if (totalHeaderHeight <= 0) return;
 
-    ctx.fillStyle = outerTheme.bgHeader;
-    ctx.fillRect(0, 0, width, totalHeaderHeight);
+    // reset background fill
+    if (!damage) {
+        ctx.fillStyle = outerTheme.bgHeader;
+        ctx.fillRect(0, 0, width, totalHeaderHeight);
+    }
 
     const [hCol, hRow] = hovered?.[0] ?? [];
 
     const font = `${outerTheme.headerFontStyle} ${outerTheme.fontFamily}`;
     // Assinging the context font too much can be expensive, it can be worth it to minimze this
     ctx.font = font;
+ 
     walkColumns(effectiveCols, 0, translateX, 0, totalHeaderHeight, (c, x, _y, clipX) => {
         if (damage !== undefined && !damage.some(d => d[1] === -1 && d[0] === c.sourceIndex)) return;
         const diff = Math.max(0, clipX - x);
@@ -835,11 +857,13 @@ function drawGridHeaders(
         ctx.rect(x + diff, groupHeaderHeight, c.width - diff, headerHeight);
         ctx.clip();
 
-        const groupTheme = getGroupDetails(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")).overrideTheme;
+        // Change: Disabled groupTheme override on columns
+        // const groupTheme = getGroupDetails(c.group ?? "").overrideTheme;
         const theme =
-            c.themeOverride === undefined && groupTheme === undefined
+            c.themeOverride === undefined
                 ? outerTheme
-                : { ...outerTheme, ...groupTheme, ...c.themeOverride };
+                // : { ...outerTheme, ...groupTheme, ...c.themeOverride };
+                   : { ...outerTheme, ...c.themeOverride }; 
 
         if (theme.bgHeader !== outerTheme.bgHeader) {
             ctx.fillStyle = theme.bgHeader;
@@ -950,7 +974,7 @@ function clipDamage(
     walkGroups(effectiveColumns, width, translateX, groupHeaderLevels, groupHeaderHeight, (span, _group, x, y, w, h) => {
         for (let i = 0; i < damage.length; i++) {
             const d = damage[i];
-            if (d[1] === -2 && d[0] >= span[0] && d[0] <= span[1]) {
+            if (d[1] <= -2 && d[0] >= span[0] && d[0] <= span[1]) {
                 ctx.rect(x, y, w, h);
                 break;
             }
@@ -1152,11 +1176,13 @@ function drawCells(
 
             const colSelected = selection.columns.hasIndex(c.sourceIndex);
 
-            const groupTheme = getGroupDetails(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")).overrideTheme;
+            // Disabled overriding of column theme from group theme
+            // const groupTheme = getGroupDetails(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")).overrideTheme;
             const colTheme =
-                c.themeOverride === undefined && groupTheme === undefined
+                c.themeOverride === undefined
                     ? outerTheme
-                    : { ...outerTheme, ...groupTheme, ...c.themeOverride };
+                    // : { ...outerTheme, ...groupTheme, ...c.themeOverride };
+                       : { ...outerTheme, ...c.themeOverride };
             const colFont = `${colTheme.baseFontStyle} ${colTheme.fontFamily}`;
             if (colFont !== font) {
                 font = colFont;
@@ -1530,6 +1556,7 @@ function drawHighlightRings(
     mappedColumns: readonly MappedGridColumn[],
     freezeColumns: number,
     headerHeight: number,
+    groupHeaderLevels: number,
     groupHeaderHeight: number,
     rowHeight: number | ((index: number) => number),
     lastRowSticky: boolean,
@@ -1545,6 +1572,7 @@ function drawHighlightRings(
             r.y,
             width,
             height,
+            groupHeaderLevels,
             groupHeaderHeight,
             headerHeight + groupHeaderHeight,
             cellXOffset,
@@ -1569,6 +1597,7 @@ function drawHighlightRings(
             r.y + r.height - 1,
             width,
             height,
+            groupHeaderLevels,
             groupHeaderHeight,
             headerHeight + groupHeaderHeight,
             cellXOffset,
@@ -1587,6 +1616,7 @@ function drawHighlightRings(
                 r.y + r.height - 1,
                 width,
                 height,
+                groupHeaderLevels,
                 groupHeaderHeight,
                 headerHeight + groupHeaderHeight,
                 cellXOffset,
@@ -1604,6 +1634,7 @@ function drawHighlightRings(
                 r.y + r.height - 1,
                 width,
                 height,
+                groupHeaderLevels,
                 groupHeaderHeight,
                 headerHeight + groupHeaderHeight,
                 cellXOffset,
@@ -2117,26 +2148,27 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             touchMode
         );
 
-        drawGridLines(
-            overlayCtx,
-            effectiveCols,
-            cellYOffset,
-            translateX,
-            translateY,
-            width,
-            height,
-            undefined,
-            undefined,
-            groupHeaderHeight,
-            totalHeaderHeight,
-            getRowHeight,
-            getRowThemeOverride,
-            verticalBorder,
-            trailingRowType,
-            rows,
-            theme,
-            true
-        );
+        // Disabled Grid Lines
+        // drawGridLines(
+        //     overlayCtx,
+        //     effectiveCols,
+        //     cellYOffset,
+        //     translateX,
+        //     translateY,
+        //     width,
+        //     height,
+        //     undefined,
+        //     undefined,
+        //     groupHeaderHeight,
+        //     totalHeaderHeight,
+        //     getRowHeight,
+        //     getRowThemeOverride,
+        //     verticalBorder,
+        //     trailingRowType,
+        //     rows,
+        //     theme,
+        //     true
+        // );
 
         overlayCtx.beginPath();
         overlayCtx.moveTo(0, overlayHeight - 0.5);
@@ -2201,8 +2233,10 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 true
             );
 
-            targetCtx.fillStyle = theme.bgCell;
-            targetCtx.fillRect(0, totalHeaderHeight + 1, width, height - totalHeaderHeight - 1);
+            // TODO: Causes issue in cell rendering
+            // targetCtx.fillStyle = theme.bgCell;
+            // targetCtx.fillRect(0, totalHeaderHeight + 1, width, height - totalHeaderHeight - 1);
+            // console.log('Clearing rect', height, totalHeaderHeight, groupHeaderHeight, damage);
 
             drawCells(
                 targetCtx,
@@ -2389,6 +2423,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         translateY,
         mappedColumns,
         freezeColumns,
+        groupHeaderLevels,
         headerHeight,
         groupHeaderHeight,
         rowHeight,
@@ -2605,16 +2640,7 @@ function walkColumns(
     }
 }
 
-type WalkGroupsCallback = (colSpan: Item, group: string, x: number, y: number, width: number, height: number) => void;
-
-function castGroupToArray(group: string | string[] | undefined) {
-    if (typeof group === 'string')
-        return [group];
-    else if (Array.isArray(group))
-        return group;
-    else
-        return [""];
-}
+type WalkGroupsCallback = (colSpan: Item, group: string, x: number, y: number, width: number, height: number, level: number) => void;
 
 function walkGroups(
     effectiveCols: readonly MappedGridColumn[],
@@ -2639,7 +2665,7 @@ function walkGroups(
             }
             while (
                 end < effectiveCols.length &&
-                isGroupEqual(castGroupToArray(effectiveCols[end].group)[level], castGroupToArray(startCol.group)[level]) &&
+                isGroupEqual(convertToStringArray(effectiveCols[end].group)[level], convertToStringArray(startCol.group)[level]) &&
                 effectiveCols[end].sticky === effectiveCols[index].sticky
             ) {
                 const endCol = effectiveCols[end];
@@ -2658,11 +2684,12 @@ function walkGroups(
 
             cb(
                 [startCol.sourceIndex, effectiveCols[end - 1].sourceIndex],
-                castGroupToArray(startCol.group)[level] ?? "",
+                convertToStringArray(startCol.group)[level] ?? "",
                 localX + delta,
                 groupHeaderHeight * level,
                 w,
                 groupHeaderHeight,
+                level,
             );
     
             x += boxWidth;

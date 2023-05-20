@@ -116,7 +116,7 @@ export interface GridMouseGroupHeaderEventArgs extends BaseGridMouseEventArgs, P
     readonly kind: typeof groupHeaderKind;
     readonly location: readonly [number, -2];
     readonly bounds: Rectangle;
-    readonly group: string | string[];
+    readonly group: string;
 }
 
 /** @category Types */

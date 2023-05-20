@@ -219,3 +219,20 @@ export function useStateWithReactiveInput<T>(inputState: T): [T, React.Dispatch<
 
     return [inputStateRef.current[0] === empty ? state : inputStateRef.current[0], setStateOuter, onEmpty];
 }
+
+// This utility casts a string or undefined to a string array
+// Used in supporting multiple groups on columns
+export function convertToStringArray(arr: string | string[] | undefined) {
+    if (typeof arr === 'string')
+        return [arr];
+    else if (Array.isArray(arr))
+        return arr;
+    else
+        return [""];
+}
+
+// rows are numbered -2, -3, -4 based on increasing order of group levels (-2 being the leaf group)
+// returns 0 for top group, 1 for 2nd group,.. n-1 from leaf group where n is levelCount
+export function getGroupLevelIndexFromRow(row: number, levelCount: number) {
+    return levelCount - (Math.abs(row) - 2) - 1;
+}

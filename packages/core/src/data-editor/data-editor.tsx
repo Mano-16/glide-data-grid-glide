@@ -48,7 +48,7 @@ import DataGridSearch, { DataGridSearchProps } from "../data-grid-search/data-gr
 import { browserIsOSX } from "../common/browser-detect";
 import { getDataEditorTheme, makeCSSStyle, Theme, ThemeContext } from "../common/styles";
 import type { DataGridRef } from "../data-grid/data-grid";
-import { getScrollBarWidth, useEventListener, useStateWithReactiveInput, whenDefined } from "../common/utils";
+import { convertToStringArray, getGroupLevelIndexFromRow, getScrollBarWidth, useEventListener, useStateWithReactiveInput, whenDefined } from "../common/utils";
 import { isGroupEqual } from "../data-grid/data-grid-lib";
 import { GroupRename } from "./group-rename";
 import { measureColumn, useColumnSizer } from "./use-column-sizer";
@@ -1216,9 +1216,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
 
     const mangledGetGroupDetails = React.useCallback<NonNullable<DataEditorProps["getGroupDetails"]>>(
         group => {
-            let groupValue: string = Array.isArray(group) ? (group[0] ?? "") : (group ?? "");
-            let result = getGroupDetails?.(group) ?? { name: groupValue };
-            if (onGroupHeaderRenamed !== undefined && groupValue !== "") {
+            let result = getGroupDetails?.(group) ?? { name: group };
+            if (onGroupHeaderRenamed !== undefined && group !== "") {
                 result = {
                     icon: result.icon,
                     name: result.name,
@@ -1847,21 +1846,22 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 return;
             }
             const isMultiKey = browserIsOSX.value ? args.metaKey : args.ctrlKey;
-            const [col] = args.location;
+            const [col, row] = args.location;
             const selectedColumns = gridSelection.columns;
 
             if (col < rowMarkerOffset) return;
 
+            const groupLevelIndex = getGroupLevelIndexFromRow(row, groupHeaderLevelsIn);
             const needle = mangledCols[col];
             let start = col;
             let end = col;
             for (let i = col - 1; i >= rowMarkerOffset; i--) {
-                if (!isGroupEqual(needle.group, mangledCols[i].group)) break;
+                if (!isGroupEqual(convertToStringArray(needle.group)[groupLevelIndex], convertToStringArray(mangledCols[i].group)[groupLevelIndex])) break;
                 start--;
             }
 
             for (let i = col + 1; i < mangledCols.length; i++) {
-                if (!isGroupEqual(needle.group, mangledCols[i].group)) break;
+                if (!isGroupEqual(convertToStringArray(needle.group)[groupLevelIndex], convertToStringArray(mangledCols[i].group)[groupLevelIndex])) break;
                 end++;
             }
 

@@ -11,7 +11,7 @@ import {
     BooleanEmpty,
     BooleanIndeterminate,
 } from "./data-grid-types";
-import { degreesToRadians, direction } from "../common/utils";
+import { convertToStringArray, degreesToRadians, direction, getGroupLevelIndexFromRow } from "../common/utils";
 import React from "react";
 import type { BaseDrawArgs, PrepResult } from "./cells/cell-types";
 import { assertNever } from "../common/support";
@@ -37,9 +37,9 @@ export function useMappedColumns(
     );
 }
 
-export function isGroupEqual(left: string[] | string | undefined, right: string[] | string | undefined): boolean {
-    const leftValue = Array.isArray(left) ? left.join('::') : (left ?? "");
-    const rightValue = Array.isArray(right) ? right.join('::') : (right ?? "");
+export function isGroupEqual(left: string | undefined, right: string | undefined): boolean {
+    const leftValue = left ?? ""; 
+    const rightValue = right ?? "";
     return leftValue === rightValue;
 }
 
@@ -200,6 +200,7 @@ export function getRowIndexForY(
     height: number,
     hasGroups: boolean,
     headerHeight: number,
+    groupHeaderLevels: number,
     groupHeaderHeight: number,
     rows: number,
     rowHeight: number | ((index: number) => number),
@@ -208,7 +209,17 @@ export function getRowIndexForY(
     lastRowSticky: boolean
 ): number | undefined {
     const totalHeaderHeight = headerHeight + groupHeaderHeight;
-    if (hasGroups && targetY <= groupHeaderHeight) return -2;
+    if (hasGroups && targetY <= groupHeaderHeight) {
+        const eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels;
+
+        // identify level based on targetY
+        const groupLevel = (new Array(groupHeaderLevels)).fill(0).map((x, i) => (i)).find(targetLevel => {
+            const targetLevelStartY = (targetLevel) * eachGroupHeaderHeight;
+            const targetLevelEndY = (targetLevel + 1) * eachGroupHeaderHeight;
+            return targetLevelStartY < targetY && targetY < targetLevelEndY;
+        }) ?? 0;
+        return -2 - (groupHeaderLevels - groupLevel) + 1; // Return -2 for last level group, -3 for parent group, ...
+    }
     if (targetY <= totalHeaderHeight) return -1;
 
     const lastRowHeight = typeof rowHeight === "number" ? rowHeight : rowHeight(rows - 1);
@@ -1187,6 +1198,7 @@ export function computeBounds(
     row: number,
     width: number,
     height: number,
+    groupHeaderLevels: number,
     groupHeaderHeight: number,
     totalHeaderHeight: number,
     cellXOffset: number,
@@ -1225,16 +1237,20 @@ export function computeBounds(
     if (row === -1) {
         result.y = groupHeaderHeight;
         result.height = headerHeight;
-    } else if (row === -2) {
-        result.y = 0;
-        result.height = groupHeaderHeight;
+    } else if (row <= -2) {
+        const groupLevelIndex = getGroupLevelIndexFromRow(row, groupHeaderLevels);
+        const eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels;
+        result.y = groupLevelIndex * eachGroupHeaderHeight;
+        result.height = groupHeaderHeight / groupHeaderLevels; // TODO: handle header level height
 
         let start = col;
-        const group = mappedColumns[col].group;
+        const group = convertToStringArray(mappedColumns[col].group)[groupLevelIndex];
         const sticky = mappedColumns[col].sticky;
+
+
         while (
             start > 0 &&
-            isGroupEqual(mappedColumns[start - 1].group, group) &&
+            isGroupEqual(convertToStringArray(mappedColumns[start - 1].group)[groupLevelIndex], group) &&
             mappedColumns[start - 1].sticky === sticky
         ) {
             const c = mappedColumns[start - 1];
@@ -1246,7 +1262,7 @@ export function computeBounds(
         let end = col;
         while (
             end + 1 < mappedColumns.length &&
-            isGroupEqual(mappedColumns[end + 1].group, group) &&
+            isGroupEqual(convertToStringArray(mappedColumns[end + 1].group)[groupLevelIndex], group) &&
             mappedColumns[end + 1].sticky === sticky
         ) {
             const c = mappedColumns[end + 1];
@@ -1265,6 +1281,7 @@ export function computeBounds(
                 result.width = width - result.x;
             }
         }
+
     } else if (lastRowSticky && row === rows - 1) {
         const stickyHeight = typeof rowHeight === "number" ? rowHeight : rowHeight(row);
         result.y = height - stickyHeight;

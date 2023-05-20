@@ -22,7 +22,7 @@ import { DataEditor, DataEditorProps } from "../data-editor";
 import faker from "faker";
 import { styled } from "@linaria/react";
 import { SimpleThemeWrapper } from "../../stories/story-utils";
-import { useEventListener } from "../../common/utils";
+import { convertToStringArray, useEventListener } from "../../common/utils";
 import { IBounds, useLayer } from "react-laag";
 import type { SpriteMap } from "../../data-grid/data-grid-sprites";
 import type { DataEditorRef, Theme } from "../..";
@@ -2790,9 +2790,9 @@ function useCollapsableColumnGroups(cols: readonly GridColumn[]) {
     const [collapsed, setCollapsed] = React.useState<readonly string[]>([]);
 
     const onGroupHeaderClicked = React.useCallback(
-        (colIndex: number, args: GroupHeaderClickedEventArgs) => {
-            const group = cols[colIndex].group ?? "";
-            // setCollapsed(cv => (cv.includes(group) ? cv.filter(g => g !== group) : [...cv, group]));
+        (_: number, args: GroupHeaderClickedEventArgs) => {
+            const group = args.group;
+            setCollapsed(cv => (cv.includes(group) ? cv.filter(g => g !== group) : [...cv, group]));
             args.preventDefault();
         },
         [cols]
@@ -2808,7 +2808,7 @@ function useCollapsableColumnGroups(cols: readonly GridColumn[]) {
 
     const columns = React.useMemo(() => {
         return cols.map(c => {
-            if (!collapsed.includes(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")))
+            if (!convertToStringArray(c.group).some(group => collapsed.includes(group)))
                 return {
                     ...c,
                     hasMenu: true,
@@ -2830,7 +2830,7 @@ function useCollapsableColumnGroups(cols: readonly GridColumn[]) {
 }
 
 export const ColumnGroupCollapse: React.VFC = () => {
-    const { cols, getCellContent } = useMockDataGenerator(100, true, true);
+    const { cols, getCellContent } = useMockDataGenerator(100, true, true, true);
 
     const groupHeaderArgs = useCollapsableColumnGroups(cols);
 
@@ -2850,7 +2850,8 @@ export const ColumnGroupCollapse: React.VFC = () => {
                 {...defaultProps}
                 {...groupHeaderArgs}
                 getCellContent={getCellContent}
-                groupHeaderHeight={24}
+                groupHeaderHeight={36}
+                groupHeaderLevels={2}
                 rows={1000}
                 rowMarkers="both"
             />

@@ -37,8 +37,10 @@ export function useMappedColumns(
     );
 }
 
-export function isGroupEqual(left: string | undefined, right: string | undefined): boolean {
-    return (left ?? "") === (right ?? "");
+export function isGroupEqual(left: string[] | string | undefined, right: string[] | string | undefined): boolean {
+    const leftValue = Array.isArray(left) ? left.join('::') : (left ?? "");
+    const rightValue = Array.isArray(right) ? right.join('::') : (right ?? "");
+    return leftValue === rightValue;
 }
 
 export function cellIsSelected(location: Item, cell: InnerGridCell, selection: GridSelection): boolean {

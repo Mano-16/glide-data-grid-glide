@@ -516,6 +516,7 @@ function drawGroups(
     width: number,
     translateX: number,
     groupHeaderHeight: number,
+    groupHeaderLevels: number,
     hovered: HoverInfo | undefined,
     theme: Theme,
     spriteManager: SpriteManager,
@@ -528,7 +529,8 @@ function drawGroups(
     const [hCol, hRow] = hovered?.[0] ?? [];
 
     let finalX = 0;
-    walkGroups(effectiveCols, width, translateX, groupHeaderHeight, (span, groupName, x, y, w, h) => {
+    let effectiveGroupheaderHeight = groupHeaderHeight / groupHeaderLevels; // TODO: handle group height based on level
+    walkGroups(effectiveCols, width, translateX, groupHeaderLevels, effectiveGroupheaderHeight, (span, groupName, x, y, w, h) => {
         if (damage !== undefined && !damage.some(d => d[1] === -2 && d[0] >= span[0] && d[0] <= span[1])) return;
         ctx.save();
         ctx.beginPath();
@@ -536,6 +538,7 @@ function drawGroups(
         ctx.clip();
 
         const group = getGroupDetails(groupName);
+
         const groupTheme = group?.overrideTheme === undefined ? theme : { ...theme, ...group.overrideTheme };
         const isHovered = hRow === -2 && hCol !== undefined && hCol >= span[0] && hCol <= span[1];
 
@@ -554,7 +557,7 @@ function drawGroups(
                     "normal",
                     ctx,
                     drawX + xPad,
-                    (groupHeaderHeight - 20) / 2,
+                    y + (effectiveGroupheaderHeight - 20) / 2,
                     20,
                     groupTheme
                 );
@@ -563,7 +566,7 @@ function drawGroups(
             ctx.fillText(
                 group.name,
                 drawX + xPad,
-                groupHeaderHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
+                y + effectiveGroupheaderHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
             );
 
             if (group.actions !== undefined && isHovered) {
@@ -572,7 +575,7 @@ function drawGroups(
                 ctx.beginPath();
                 const fadeStartX = actionBoxes[0].x - 10;
                 const fadeWidth = x + w - fadeStartX;
-                ctx.rect(fadeStartX, 0, fadeWidth, groupHeaderHeight);
+                ctx.rect(fadeStartX, 0, fadeWidth, effectiveGroupheaderHeight);
                 const grad = ctx.createLinearGradient(fadeStartX, 0, fadeStartX + fadeWidth, 0);
                 const trans = withAlpha(fillColor, 0);
                 grad.addColorStop(0, trans);
@@ -614,7 +617,7 @@ function drawGroups(
         if (x !== 0 && verticalBorder(span[0])) {
             ctx.beginPath();
             ctx.moveTo(x + 0.5, 0);
-            ctx.lineTo(x + 0.5, groupHeaderHeight);
+            ctx.lineTo(x + 0.5, effectiveGroupheaderHeight);
             ctx.strokeStyle = theme.borderColor;
             ctx.lineWidth = 1;
             ctx.stroke();
@@ -627,10 +630,14 @@ function drawGroups(
 
     ctx.beginPath();
     ctx.moveTo(finalX + 0.5, 0);
-    ctx.lineTo(finalX + 0.5, groupHeaderHeight);
+    ctx.lineTo(finalX + 0.5, effectiveGroupheaderHeight);
+    
+    // draw line separators between groups
+    for (let level = 1; level <= groupHeaderLevels; level++) {
+        ctx.moveTo(0, (effectiveGroupheaderHeight * level) + 0.5);
+        ctx.lineTo(width, (effectiveGroupheaderHeight * level) + 0.5);
+    }
 
-    ctx.moveTo(0, groupHeaderHeight + 0.5);
-    ctx.lineTo(width, groupHeaderHeight + 0.5);
     ctx.strokeStyle = theme.borderColor;
     ctx.lineWidth = 1;
     ctx.stroke();
@@ -796,6 +803,7 @@ function drawGridHeaders(
     translateX: number,
     headerHeight: number,
     groupHeaderHeight: number,
+    groupHeaderLevels: number,
     dragAndDropState: DragAndDropState | undefined,
     isResizing: boolean,
     selection: GridSelection,
@@ -827,7 +835,7 @@ function drawGridHeaders(
         ctx.rect(x + diff, groupHeaderHeight, c.width - diff, headerHeight);
         ctx.clip();
 
-        const groupTheme = getGroupDetails(c.group ?? "").overrideTheme;
+        const groupTheme = getGroupDetails(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")).overrideTheme;
         const theme =
             c.themeOverride === undefined && groupTheme === undefined
                 ? outerTheme
@@ -900,6 +908,7 @@ function drawGridHeaders(
             width,
             translateX,
             groupHeaderHeight,
+            groupHeaderLevels,
             hovered,
             outerTheme,
             spriteManager,
@@ -920,6 +929,7 @@ function clipDamage(
     effectiveColumns: readonly MappedGridColumn[],
     width: number,
     height: number,
+    groupHeaderLevels: number,
     groupHeaderHeight: number,
     totalHeaderHeight: number,
     translateX: number,
@@ -937,7 +947,7 @@ function clipDamage(
 
     ctx.beginPath();
 
-    walkGroups(effectiveColumns, width, translateX, groupHeaderHeight, (span, _group, x, y, w, h) => {
+    walkGroups(effectiveColumns, width, translateX, groupHeaderLevels, groupHeaderHeight, (span, _group, x, y, w, h) => {
         for (let i = 0; i < damage.length; i++) {
             const d = damage[i];
             if (d[1] === -2 && d[0] >= span[0] && d[0] <= span[1]) {
@@ -1142,7 +1152,7 @@ function drawCells(
 
             const colSelected = selection.columns.hasIndex(c.sourceIndex);
 
-            const groupTheme = getGroupDetails(c.group ?? "").overrideTheme;
+            const groupTheme = getGroupDetails(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")).overrideTheme;
             const colTheme =
                 c.themeOverride === undefined && groupTheme === undefined
                     ? outerTheme
@@ -1852,6 +1862,7 @@ export interface DrawGridArg {
     readonly theme: Theme;
     readonly headerHeight: number;
     readonly groupHeaderHeight: number;
+    readonly groupHeaderLevels: number;
     readonly disabledRows: CompactSelection;
     readonly rowHeight: number | ((index: number) => number);
     readonly verticalBorder: (col: number) => boolean;
@@ -1960,6 +1971,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         drawFocus,
         headerHeight,
         groupHeaderHeight,
+        groupHeaderLevels,
         disabledRows,
         rowHeight,
         verticalBorder,
@@ -2091,6 +2103,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             translateX,
             headerHeight,
             groupHeaderHeight,
+            groupHeaderLevels,
             dragAndDropState,
             isResizing,
             selection,
@@ -2175,6 +2188,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 effectiveCols,
                 width,
                 height,
+                groupHeaderLevels,
                 groupHeaderHeight,
                 totalHeaderHeight,
                 translateX,
@@ -2257,6 +2271,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 effectiveCols,
                 width,
                 totalHeaderHeight,
+                groupHeaderLevels,
                 groupHeaderHeight,
                 totalHeaderHeight,
                 translateX,
@@ -2591,50 +2606,66 @@ function walkColumns(
 }
 
 type WalkGroupsCallback = (colSpan: Item, group: string, x: number, y: number, width: number, height: number) => void;
+
+function castGroupToArray(group: string | string[] | undefined) {
+    if (typeof group === 'string')
+        return [group];
+    else if (Array.isArray(group))
+        return group;
+    else
+        return [""];
+}
+
 function walkGroups(
     effectiveCols: readonly MappedGridColumn[],
     width: number,
     translateX: number,
+    groupHeaderLevels: number,
     groupHeaderHeight: number,
     cb: WalkGroupsCallback
 ): void {
-    let x = 0;
-    let clipX = 0;
-    for (let index = 0; index < effectiveCols.length; index++) {
-        const startCol = effectiveCols[index];
+    // iterate on all levels
+    for (let level = 0; level < groupHeaderLevels; level++) {
+        let x = 0;
+        let clipX = 0;
 
-        let end = index + 1;
-        let boxWidth = startCol.width;
-        if (startCol.sticky) {
-            clipX += boxWidth;
-        }
-        while (
-            end < effectiveCols.length &&
-            isGroupEqual(effectiveCols[end].group, startCol.group) &&
-            effectiveCols[end].sticky === effectiveCols[index].sticky
-        ) {
-            const endCol = effectiveCols[end];
-            boxWidth += endCol.width;
-            end++;
-            index++;
-            if (endCol.sticky) {
-                clipX += endCol.width;
+        for (let index = 0; index < effectiveCols.length; index++) {
+            const startCol = effectiveCols[index];
+    
+            let end = index + 1;
+            let boxWidth = startCol.width;
+            if (startCol.sticky) {
+                clipX += boxWidth;
             }
+            while (
+                end < effectiveCols.length &&
+                isGroupEqual(castGroupToArray(effectiveCols[end].group)[level], castGroupToArray(startCol.group)[level]) &&
+                effectiveCols[end].sticky === effectiveCols[index].sticky
+            ) {
+                const endCol = effectiveCols[end];
+                boxWidth += endCol.width;
+                end++;
+                index++;
+                if (endCol.sticky) {
+                    clipX += endCol.width;
+                }
+            }
+    
+            const t = startCol.sticky ? 0 : translateX;
+            const localX = x + t;
+            const delta = startCol.sticky ? 0 : Math.max(0, clipX - localX);
+            const w = Math.min(boxWidth - delta, width - (localX + delta));
+
+            cb(
+                [startCol.sourceIndex, effectiveCols[end - 1].sourceIndex],
+                castGroupToArray(startCol.group)[level] ?? "",
+                localX + delta,
+                groupHeaderHeight * level,
+                w,
+                groupHeaderHeight,
+            );
+    
+            x += boxWidth;
         }
-
-        const t = startCol.sticky ? 0 : translateX;
-        const localX = x + t;
-        const delta = startCol.sticky ? 0 : Math.max(0, clipX - localX);
-        const w = Math.min(boxWidth - delta, width - (localX + delta));
-        cb(
-            [startCol.sourceIndex, effectiveCols[end - 1].sourceIndex],
-            startCol.group ?? "",
-            localX + delta,
-            0,
-            w,
-            groupHeaderHeight
-        );
-
-        x += boxWidth;
     }
 }

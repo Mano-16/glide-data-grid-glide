@@ -102,6 +102,7 @@ export function Simplenotest() {
             isFilling={false}
             onMouseMove={() => undefined}
             groupHeaderHeight={0}
+            groupHeaderLevels={1}
             accessibilityHeight={50}
             enableGroups={false}
             selection={emptyGridSelection}
@@ -185,6 +186,7 @@ export function SelectedCellnotest() {
             isFilling={false}
             cellYOffset={0}
             groupHeaderHeight={34}
+            groupHeaderLevels={1}
             enableGroups={false}
             rows={1000}
             headerHeight={44}
@@ -271,6 +273,7 @@ export function SelectedRownotest() {
             drawCustomCell={undefined}
             drawFocusRing={undefined}
             groupHeaderHeight={34}
+            groupHeaderLevels={1}
             accessibilityHeight={50}
             isFilling={false}
             enableGroups={false}
@@ -357,6 +360,7 @@ export const SelectedColumnnotest = () => {
             accessibilityHeight={50}
             isFilling={false}
             groupHeaderHeight={34}
+            groupHeaderLevels={1}
             enableGroups={false}
             rows={1000}
             headerHeight={44}

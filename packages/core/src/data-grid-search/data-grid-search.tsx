@@ -414,6 +414,7 @@ const DataGridSearch: React.FunctionComponent<DataGridSearchProps> = p => {
                 getGroupDetails={p.getGroupDetails}
                 getRowThemeOverride={p.getRowThemeOverride}
                 groupHeaderHeight={p.groupHeaderHeight}
+                groupHeaderLevels={p.groupHeaderLevels}
                 headerHeight={p.headerHeight}
                 highlightRegions={p.highlightRegions}
                 imageWindowLoader={p.imageWindowLoader}

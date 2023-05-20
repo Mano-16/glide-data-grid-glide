@@ -360,6 +360,7 @@ const DataGridDnd: React.FunctionComponent<DataGridDndProps> = p => {
             getGroupDetails={p.getGroupDetails}
             getRowThemeOverride={p.getRowThemeOverride}
             groupHeaderHeight={p.groupHeaderHeight}
+            groupHeaderLevels={p.groupHeaderLevels}
             headerHeight={p.headerHeight}
             headerIcons={p.headerIcons}
             height={p.height}

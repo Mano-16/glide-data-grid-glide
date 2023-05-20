@@ -260,11 +260,21 @@ export const BeautifulWrapper: React.FC<BeautifulProps> = p => {
     );
 };
 
-function createTextColumnInfo(index: number, group: boolean): GridColumnWithMockingInfo {
+function createTextColumnInfo(index: number, group: boolean, multiLevelGroups: boolean = false): GridColumnWithMockingInfo {
+    const getGroup = (groups: string[]) => {
+        if (group && multiLevelGroups) {
+            return groups ?? undefined;
+        }
+        if (group && !multiLevelGroups) {
+            return groups[groups.length - 1] ?? undefined; // take the last one
+        }
+        return undefined;
+    }
+
     return {
         title: `Column ${index}`,
         id: `Column ${index}`,
-        group: group ? `Group ${Math.round(index / 3)}` : undefined,
+        group: getGroup(['Extra', `Group ${Math.round(index / 3)-1}`]),
         icon: GridColumnIcon.HeaderString,
         hasMenu: false,
         getContent: () => {
@@ -281,12 +291,21 @@ function createTextColumnInfo(index: number, group: boolean): GridColumnWithMock
     };
 }
 
-function getResizableColumns(amount: number, group: boolean): GridColumnWithMockingInfo[] {
+function getResizableColumns(amount: number, group: boolean, multiLevelGroups: boolean = false): GridColumnWithMockingInfo[] {
+    const getGroup = (groups: string[]) => {
+        if (group && multiLevelGroups) {
+            return groups ?? undefined;
+        }
+        if (group && !multiLevelGroups) {
+            return groups[groups.length - 1] ?? undefined; // take the last one
+        }
+        return undefined;
+    }
     const defaultColumns: GridColumnWithMockingInfo[] = [
         {
             title: "First name",
             id: "First name",
-            group: group ? "Name" : undefined,
+            group: getGroup(["Account", "Name"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -303,7 +322,7 @@ function getResizableColumns(amount: number, group: boolean): GridColumnWithMock
         {
             title: "Last name",
             id: "Last name",
-            group: group ? "Name" : undefined,
+            group: getGroup(["Account", "Name"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -320,7 +339,7 @@ function getResizableColumns(amount: number, group: boolean): GridColumnWithMock
         {
             title: "Avatar",
             id: "Avatar",
-            group: group ? "Info" : undefined,
+            group: getGroup(["Account", "Info"]),
             icon: GridColumnIcon.HeaderImage,
             hasMenu: false,
             getContent: () => {
@@ -338,7 +357,7 @@ function getResizableColumns(amount: number, group: boolean): GridColumnWithMock
         {
             title: "Email",
             id: "Email",
-            group: group ? "Info" : undefined,
+            group: getGroup(["Account", "Info"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -355,7 +374,7 @@ function getResizableColumns(amount: number, group: boolean): GridColumnWithMock
         {
             title: "Title",
             id: "Title",
-            group: group ? "Info" : undefined,
+            group: getGroup(["Account", "Info"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -372,7 +391,7 @@ function getResizableColumns(amount: number, group: boolean): GridColumnWithMock
         {
             title: "More Info",
             id: "More Info",
-            group: group ? "Info" : undefined,
+            group: group ? ["Account", "Info"] : undefined,
             icon: GridColumnIcon.HeaderUri,
             hasMenu: false,
             getContent: () => {
@@ -396,7 +415,7 @@ function getResizableColumns(amount: number, group: boolean): GridColumnWithMock
 
     // eslint-disable-next-line unicorn/no-new-array
     const extraColumns = [...new Array(extraColumnsAmount)].map((_, index) =>
-        createTextColumnInfo(index + defaultColumns.length, group)
+        createTextColumnInfo(index + defaultColumns.length, group, multiLevelGroups)
     );
 
     return [...defaultColumns, ...extraColumns];
@@ -426,13 +445,13 @@ export class ContentCache {
     }
 }
 
-export function useMockDataGenerator(numCols: number, readonly: boolean = true, group: boolean = false) {
+export function useMockDataGenerator(numCols: number, readonly: boolean = true, group: boolean = false, multiLevelGroups: boolean = false) {
     const cache = React.useRef<ContentCache>(new ContentCache());
 
-    const [colsMap, setColsMap] = React.useState(() => getResizableColumns(numCols, group));
+    const [colsMap, setColsMap] = React.useState(() => getResizableColumns(numCols, group, multiLevelGroups));
 
     React.useEffect(() => {
-        setColsMap(getResizableColumns(numCols, group));
+        setColsMap(getResizableColumns(numCols, group, multiLevelGroups));
     }, [group, numCols]);
 
     const onColumnResize = React.useCallback((column: GridColumn, newSize: number) => {

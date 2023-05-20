@@ -106,7 +106,7 @@ export interface GridMouseHeaderEventArgs extends BaseGridMouseEventArgs, Positi
     readonly kind: typeof headerKind;
     readonly location: readonly [number, -1];
     readonly bounds: Rectangle;
-    readonly group: string;
+    readonly group: string | string[];
 }
 
 /** @category Types */
@@ -116,7 +116,7 @@ export interface GridMouseGroupHeaderEventArgs extends BaseGridMouseEventArgs, P
     readonly kind: typeof groupHeaderKind;
     readonly location: readonly [number, -2];
     readonly bounds: Rectangle;
-    readonly group: string;
+    readonly group: string | string[];
 }
 
 /** @category Types */
@@ -252,7 +252,7 @@ export const headerCellIndeterminateMarker = headerCellCheckboxPrefix + "indeter
 
 interface BaseGridColumn {
     readonly title: string;
-    readonly group?: string;
+    readonly group?: string | string[];
     readonly icon?: GridColumnIcon | string;
     readonly overlayIcon?: GridColumnIcon | string;
     readonly hasMenu?: boolean;

@@ -97,6 +97,7 @@ export interface DataGridProps {
     readonly rows: number;
 
     readonly headerHeight: number;
+    readonly groupHeaderLevels: number;
     readonly groupHeaderHeight: number;
     readonly enableGroups: boolean;
     readonly rowHeight: number | ((index: number) => number);
@@ -303,6 +304,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         headerHeight,
         fillHandle = false,
         groupHeaderHeight,
+        groupHeaderLevels,
         rowHeight,
         rows,
         getCellContent,
@@ -679,6 +681,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             theme,
             headerHeight,
             groupHeaderHeight,
+            groupHeaderLevels,
             disabledRows: disabledRows ?? CompactSelection.empty(),
             rowHeight,
             verticalBorder,
@@ -846,9 +849,9 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
     }
 
     const groupHeaderActionForEvent = React.useCallback(
-        (group: string, bounds: Rectangle, localEventX: number, localEventY: number) => {
+        (group: string | string[], bounds: Rectangle, localEventX: number, localEventY: number) => {
             if (getGroupDetails === undefined) return undefined;
-            const groupDesc = getGroupDetails(group);
+            const groupDesc = getGroupDetails(Array.isArray(group) ? (group[0] ?? "") : (group ?? ""));
             if (groupDesc.actions !== undefined) {
                 const boxes = getActionBoundsForGroup(bounds, groupDesc.actions);
                 for (const [i, box] of boxes.entries()) {

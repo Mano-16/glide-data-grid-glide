@@ -2693,7 +2693,9 @@ export const ColumnGroups: React.VFC = () => {
                 onGroupHeaderRenamed={(x, y) => window.alert(`Please rename group ${x} to ${y}`)}
                 columns={cols}
                 getCellsForSelection={getCellsForSelection}
+                freezeColumns={0}
                 rows={1000}
+                groupHeaderHeight={36}
                 getGroupDetails={g => ({
                     name: g,
                     icon: g === "" ? undefined : GridColumnIcon.HeaderCode,
@@ -2704,6 +2706,42 @@ export const ColumnGroups: React.VFC = () => {
     );
 };
 (ColumnGroups as any).parameters = {
+    options: {
+        showPanel: false,
+    },
+};
+
+export const MultiLevelColumnGroups: React.VFC = () => {
+    const { cols, getCellContent, getCellsForSelection } = useMockDataGenerator(20, true, true, true);
+
+    return (
+        <BeautifulWrapper
+            title="Multi Level Column Grouping"
+            description={
+                <Description>
+                    Columns in the data grid may be grouped by setting their <PropName>group</PropName> property.
+                </Description>
+            }>
+            <DataEditor
+                {...defaultProps}
+                getCellContent={getCellContent}
+                onGroupHeaderRenamed={(x, y) => window.alert(`Please rename group ${x} to ${y}`)}
+                columns={cols}
+                getCellsForSelection={getCellsForSelection}
+                freezeColumns={0}
+                rows={1000}
+                groupHeaderHeight={72}
+                groupHeaderLevels={2}
+                getGroupDetails={g => ({
+                    name: g,
+                    icon: g === "" ? undefined : GridColumnIcon.HeaderCode,
+                })}
+                rowMarkers="both"
+            />
+        </BeautifulWrapper>
+    );
+};
+(MultiLevelColumnGroups as any).parameters = {
     options: {
         showPanel: false,
     },
@@ -2754,7 +2792,7 @@ function useCollapsableColumnGroups(cols: readonly GridColumn[]) {
     const onGroupHeaderClicked = React.useCallback(
         (colIndex: number, args: GroupHeaderClickedEventArgs) => {
             const group = cols[colIndex].group ?? "";
-            setCollapsed(cv => (cv.includes(group) ? cv.filter(g => g !== group) : [...cv, group]));
+            // setCollapsed(cv => (cv.includes(group) ? cv.filter(g => g !== group) : [...cv, group]));
             args.preventDefault();
         },
         [cols]
@@ -2770,7 +2808,7 @@ function useCollapsableColumnGroups(cols: readonly GridColumn[]) {
 
     const columns = React.useMemo(() => {
         return cols.map(c => {
-            if (!collapsed.includes(c.group ?? ""))
+            if (!collapsed.includes(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")))
                 return {
                     ...c,
                     hasMenu: true,

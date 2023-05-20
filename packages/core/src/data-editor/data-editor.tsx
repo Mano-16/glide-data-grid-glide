@@ -90,6 +90,7 @@ type Props = Partial<
         | "getCellsForSelection"
         | "gridRef"
         | "groupHeaderHeight"
+        | "groupHeaderLevels"
         | "headerHeight"
         | "isFilling"
         | "isFocused"
@@ -291,6 +292,11 @@ export interface DataEditorProps extends Props {
      * @group Style
      */
     readonly groupHeaderHeight?: number;
+    /** Controls the number of header levels
+     * @defaultValue `1`
+     * @group Style
+     */
+    readonly groupHeaderLevels?: number;
 
     /**
      * The number of rows in the grid.
@@ -765,6 +771,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         rowHeight: rowHeightIn = 34,
         headerHeight: headerHeightIn = 36,
         groupHeaderHeight: groupHeaderHeightIn = headerHeightIn,
+        groupHeaderLevels: groupHeaderLevelsIn = 1,
         theme: themeIn,
     } = p;
 
@@ -1209,8 +1216,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
 
     const mangledGetGroupDetails = React.useCallback<NonNullable<DataEditorProps["getGroupDetails"]>>(
         group => {
-            let result = getGroupDetails?.(group) ?? { name: group };
-            if (onGroupHeaderRenamed !== undefined && group !== "") {
+            let groupValue: string = Array.isArray(group) ? (group[0] ?? "") : (group ?? "");
+            let result = getGroupDetails?.(group) ?? { name: groupValue };
+            if (onGroupHeaderRenamed !== undefined && groupValue !== "") {
                 result = {
                     icon: result.icon,
                     name: result.name,
@@ -1239,7 +1247,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             const [col, row] = val.cell;
             const column = mangledCols[col];
             const groupTheme =
-                column?.group !== undefined ? mangledGetGroupDetails(column.group)?.overrideTheme : undefined;
+                column?.group !== undefined ? mangledGetGroupDetails(Array.isArray(column.group) ? column.group[0] : column.group)?.overrideTheme : undefined;
             const colTheme = column?.themeOverride;
             const rowTheme = getRowThemeOverride?.(row);
 
@@ -3558,6 +3566,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     headerHeight={headerHeight}
                     isFocused={isFocused}
                     groupHeaderHeight={enableGroups ? groupHeaderHeight : 0}
+                    groupHeaderLevels={enableGroups ? groupHeaderLevelsIn : 0}
                     trailingRowType={
                         !showTrailingBlankRow ? "none" : trailingRowOptions?.sticky === true ? "sticky" : "appended"
                     }

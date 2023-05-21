@@ -46,6 +46,7 @@ const basicProps: DataGridProps = {
     drawCustomCell: undefined,
     drawFocusRing: undefined,
     drawHeader: undefined,
+    drawGroup: undefined,
     isFocused: true,
     experimental: undefined,
     columns: [
@@ -88,6 +89,7 @@ const basicProps: DataGridProps = {
         displayData: `${cell[0]},${cell[1]}`,
     }),
     groupHeaderHeight: 0,
+    groupHeaderLevels: 1,
     headerHeight: 36,
     accessibilityHeight: 50,
     height: 1000,

@@ -1,4 +1,4 @@
-import { CustomCell, CustomRenderer, GridCellKind } from "@glideapps/glide-data-grid";
+import { CustomCell, CustomRenderer, GridCellKind } from "@lumel/glide-data-grid";
 
 interface SpinnerCellProps {
     readonly kind: "spinner-cell";

@@ -44,7 +44,6 @@ import {
     drawGrid,
     DrawGridArg,
     drawHeader,
-    drawGroup,
     getActionBoundsForGroup,
     getHeaderMenuBounds,
     GetRowThemeCallback,
@@ -476,6 +475,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             trailingRowType,
             mappedColumns,
             rowHeight,
+            groupHeaderLevels,
         ]
     );
 
@@ -634,6 +634,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             trailingRowType,
             getBoundsForItem,
             fillHandle,
+            groupHeaderLevels,
         ]
     );
 
@@ -787,6 +788,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         experimental?.renderStrategy,
         lastWasTouch,
         getCellRenderer,
+        groupHeaderLevels,
     ]);
 
     const lastDrawRef = React.useRef(draw);
@@ -1286,26 +1288,6 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                                     drawHeaderCallback,
                                     false
                                 );
-                            } else if (row <= -2) {
-                                ctx.font = `${theme.headerFontStyle} ${theme.fontFamily}`;
-                                ctx.fillStyle = theme.bgHeader;
-                                ctx.fillRect(0, 0, offscreen.width, offscreen.height);
-                                drawGroup(
-                                    ctx,
-                                    0,
-                                    0,
-                                    // boundsForDragTarget.width,
-                                    // boundsForDragTarget.height,
-                                    // mappedColumns[col],
-                                    // false,
-                                    // theme,
-                                    // false,
-                                    // false,
-                                    // 0,
-                                    // spriteManager,
-                                    drawGroupCallback,
-                                    // false
-                                );
                             } else {
                                 ctx.font = `${theme.baseFontStyle} ${theme.fontFamily}`;
                                 ctx.fillStyle = theme.bgCell;
@@ -1365,7 +1347,6 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             mappedColumns,
             spriteManager,
             drawHeaderCallback,
-            drawGroupCallback,
             getCellContent,
             drawCustomCell,
             imageLoader,

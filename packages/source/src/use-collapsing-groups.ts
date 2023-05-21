@@ -1,4 +1,5 @@
 import type { GridSelection, DataEditorProps, Theme } from "@glideapps/glide-data-grid";
+import { convertToStringArray } from "@glideapps/glide-data-grid/dist/ts/common/utils";
 import React from "react";
 
 type Props = Pick<
@@ -34,7 +35,8 @@ export function useCollapsingGroups(props: Props): Result {
         for (let i = freezeColumns; i < columnsIn.length; i++) {
             const c = columnsIn[i];
             const group = c.group ?? "";
-            const isCollapsed = collapsed.includes(group);
+            const groupString = convertToStringArray(group).join('::');
+            const isCollapsed = collapsed.includes(groupString);
 
             if (lastGroup !== group && current[0] !== -1) {
                 result.push(current);
@@ -49,7 +51,7 @@ export function useCollapsingGroups(props: Props): Result {
                 result.push(current);
                 current = [-1, -1];
             }
-            lastGroup = group;
+            lastGroup = groupString;
         }
         if (current[0] !== -1) result.push(current);
         return result;
@@ -81,9 +83,10 @@ export function useCollapsingGroups(props: Props): Result {
             onGroupHeaderClickedIn?.(index, a);
 
             const group = columns[index]?.group ?? "";
-            if (group === "") return;
+            const groupString = convertToStringArray(group).join("::");
+            if (groupString === "") return;
             a.preventDefault();
-            setCollapsed(cv => (cv.includes(group) ? cv.filter(x => x !== group) : [...cv, group]));
+            setCollapsed(cv => (cv.includes(groupString) ? cv.filter(x => x !== groupString) : [...cv, groupString]));
         },
         [columns, onGroupHeaderClickedIn]
     );
@@ -94,7 +97,8 @@ export function useCollapsingGroups(props: Props): Result {
                 const col = s.current.cell[0];
                 const column = columns[col];
                 setCollapsed(cv => {
-                    if (cv.includes(column?.group ?? "")) {
+                    const groupString = convertToStringArray(column?.group).join("::");
+                    if (cv.includes(groupString)) {
                         return cv.filter(g => g !== column.group);
                     }
                     return cv;

@@ -2842,7 +2842,7 @@ function useCollapsableColumnGroups(cols: readonly GridColumn[]) {
             setCollapsed(cv => (cv.includes(group) ? cv.filter(g => g !== group) : [...cv, group]));
             args.preventDefault();
         },
-        [cols]
+        []
     );
 
     const [selectedColumns, setSelectedColumns] = React.useState<CompactSelection>(CompactSelection.empty());

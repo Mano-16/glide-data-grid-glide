@@ -931,9 +931,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         drawGroupIn,
         React.useCallback<NonNullable<typeof drawGroupIn>>(
             args => {
-                return drawGroupIn?.({ ...args, columnIndex: args.columnIndex - rowMarkerOffset }) ?? false;
+                return drawGroupIn?.({ ...args }) ?? false;
             },
-            [drawGroupIn, rowMarkerOffset]
+            [drawGroupIn]
         )
     );
 
@@ -1892,7 +1892,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 setSelectedColumns(CompactSelection.fromSingleSelection([start, end + 1]), undefined, isMultiKey);
             }
         },
-        [columnSelect, focus, gridSelection.columns, mangledCols, rowMarkerOffset, setSelectedColumns]
+        [columnSelect, focus, gridSelection.columns, mangledCols, rowMarkerOffset, groupHeaderLevelsIn, setSelectedColumns]
     );
 
     const fillDown = React.useCallback(

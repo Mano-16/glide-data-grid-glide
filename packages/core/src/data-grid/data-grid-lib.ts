@@ -37,10 +37,10 @@ export function useMappedColumns(
     );
 }
 
-export function isGroupEqual(left: string | undefined, right: string | undefined): boolean {
-    const leftValue = left ?? ""; 
-    const rightValue = right ?? "";
-    return leftValue === rightValue;
+export function isGroupEqual(left: string | undefined = "", right: string | undefined = ""): boolean {
+    // const leftValue = left ?? ""; 
+    // const rightValue = right ?? "";
+    return left === right;
 }
 
 export function cellIsSelected(location: Item, cell: InnerGridCell, selection: GridSelection): boolean {
@@ -213,7 +213,8 @@ export function getRowIndexForY(
         const eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels;
 
         // identify level based on targetY
-        const groupLevel = (new Array(groupHeaderLevels)).fill(0).map((x, i) => (i)).find(targetLevel => {
+        // eslint-disable-next-line unicorn/no-new-array
+        const groupLevel = (new Array(groupHeaderLevels)).fill(0).map((_, i) => (i)).find(targetLevel => {
             const targetLevelStartY = (targetLevel) * eachGroupHeaderHeight;
             const targetLevelEndY = (targetLevel + 1) * eachGroupHeaderHeight;
             return targetLevelStartY < targetY && targetY < targetLevelEndY;

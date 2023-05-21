@@ -523,15 +523,15 @@ function drawGroups(
     theme: Theme,
     spriteManager: SpriteManager,
     _hoverValues: HoverValues,
-    verticalBorder: (col: number) => boolean,
+    // verticalBorder: (col: number) => boolean,
     getGroupDetails: GroupDetailsCallback,
     drawGroupCallback: DrawGroupCallback | undefined,
     damage: CellList | undefined
 ) {
     const [hCol, hRow] = hovered?.[0] ?? [];
     const hGroupLevelIndex = getGroupLevelIndexFromRow(hRow ?? 0, groupHeaderLevels);
-    let finalX = 0;
-    let eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels; // TODO: handle group height based on level
+    // let finalX = 0;
+    const eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels; // TODO: handle group height based on level
 
     walkGroups(effectiveCols, width, translateX, groupHeaderLevels, eachGroupHeaderHeight, (span, groupName, x, y, w, h, level) => {
         // if (damage !== undefined && !damage.some(d => d[1] == -2 && d[0] >= span[0] && d[0] <= span[1])) return;
@@ -630,7 +630,7 @@ function drawGroups(
         // }
 
         ctx.restore();
-        finalX = x + w;
+        // finalX = x + w;
     });
     
     // draw horizontal line separators between groups
@@ -682,23 +682,19 @@ export function drawGroup (
     spriteManager: SpriteManager,
     drawGroupCallback: DrawGroupCallback | undefined,
 ) {
-    if (drawGroupCallback !== undefined) {
-        if (
-            drawGroupCallback({
-                ctx,
-                theme,
-                groupTheme,
-                rect: { x, y, width, height },
-                level,
-                span,
-                name: group.name,
-                icon: group.icon,
-                isHovered,
-                spriteManager
-            })
-        ) {
-            return;
-        }
+    if (drawGroupCallback !== undefined && drawGroupCallback({
+        ctx,
+        theme,
+        groupTheme,
+        rect: { x, y, width, height },
+        level,
+        span,
+        name: group.name,
+        icon: group.icon,
+        isHovered,
+        spriteManager
+    })) {
+        return;
     }
 
     const xPad = 8;
@@ -884,7 +880,7 @@ function drawGridHeaders(
     outerTheme: Theme,
     spriteManager: SpriteManager,
     hoverValues: HoverValues,
-    verticalBorder: (col: number) => boolean,
+    // verticalBorder: (col: number) => boolean,
     getGroupDetails: GroupDetailsCallback,
     damage: CellList | undefined,
     drawHeaderCallback: DrawHeaderCallback | undefined,
@@ -996,7 +992,7 @@ function drawGridHeaders(
             outerTheme,
             spriteManager,
             hoverValues,
-            verticalBorder,
+            // verticalBorder,
             getGroupDetails,
             drawGroupCallback,
             damage
@@ -1175,7 +1171,7 @@ function drawCells(
     rows: number,
     getRowHeight: (row: number) => number,
     getCellContent: (cell: Item) => InnerGridCell,
-    getGroupDetails: GroupDetailsCallback,
+    // getGroupDetails: GroupDetailsCallback, 
     getRowThemeOverride: GetRowThemeCallback | undefined,
     disabledRows: CompactSelection,
     isFocused: boolean,
@@ -1235,14 +1231,13 @@ function drawCells(
             };
 
             const colSelected = selection.columns.hasIndex(c.sourceIndex);
-
-            // Disabled overriding of column theme from group theme
+            // Disabled overriding of theme from group theme
             // const groupTheme = getGroupDetails(Array.isArray(c.group) ? (c.group[0] ?? "") : (c.group ?? "")).overrideTheme;
             const colTheme =
                 c.themeOverride === undefined
                     ? outerTheme
+                    : { ...outerTheme, ...c.themeOverride };
                     // : { ...outerTheme, ...groupTheme, ...c.themeOverride };
-                       : { ...outerTheme, ...c.themeOverride };
             const colFont = `${colTheme.baseFontStyle} ${colTheme.fontFamily}`;
             if (colFont !== font) {
                 font = colFont;
@@ -2203,7 +2198,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             theme,
             spriteManager,
             hoverValues,
-            verticalBorder,
+            // verticalBorder,
             getGroupDetails,
             damage,
             drawHeaderCallback,
@@ -2313,7 +2308,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 rows,
                 getRowHeight,
                 getCellContent,
-                getGroupDetails,
+                // getGroupDetails,
                 getRowThemeOverride,
                 disabledRows,
                 isFocused,
@@ -2520,7 +2515,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         rows,
         getRowHeight,
         getCellContent,
-        getGroupDetails,
+        // getGroupDetails,
         getRowThemeOverride,
         disabledRows,
         isFocused,

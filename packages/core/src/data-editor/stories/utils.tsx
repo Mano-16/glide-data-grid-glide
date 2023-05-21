@@ -260,21 +260,21 @@ export const BeautifulWrapper: React.FC<BeautifulProps> = p => {
     );
 };
 
-function createTextColumnInfo(index: number, group: boolean, multiLevelGroups: boolean = false): GridColumnWithMockingInfo {
-    const getGroup = (groups: string[]) => {
-        if (group && multiLevelGroups) {
-            return groups ?? undefined;
-        }
-        if (group && !multiLevelGroups) {
-            return groups[groups.length - 1] ?? undefined; // take the last one
-        }
-        return undefined;
+const generateGroup = (group: boolean, multiLevelGroups: boolean, groups: string[]) => {
+    if (group && multiLevelGroups) {
+        return groups ?? undefined;
     }
+    if (group && !multiLevelGroups) {
+        return groups[groups.length - 1] ?? undefined; // take the last one
+    }
+    return undefined;
+}
 
+function createTextColumnInfo(index: number, group: boolean, multiLevelGroups: boolean = false): GridColumnWithMockingInfo {
     return {
         title: `Column ${index}`,
         id: `Column ${index}`,
-        group: getGroup(['Extra', `Group ${Math.round(index / 3)-1}`]),
+        group: generateGroup(group, multiLevelGroups, ['Extra', `Group ${Math.round(index / 3)-1}`]),
         icon: GridColumnIcon.HeaderString,
         hasMenu: false,
         getContent: () => {
@@ -292,20 +292,11 @@ function createTextColumnInfo(index: number, group: boolean, multiLevelGroups: b
 }
 
 function getResizableColumns(amount: number, group: boolean, multiLevelGroups: boolean = false): GridColumnWithMockingInfo[] {
-    const getGroup = (groups: string[]) => {
-        if (group && multiLevelGroups) {
-            return groups ?? undefined;
-        }
-        if (group && !multiLevelGroups) {
-            return groups[groups.length - 1] ?? undefined; // take the last one
-        }
-        return undefined;
-    }
     const defaultColumns: GridColumnWithMockingInfo[] = [
         {
             title: "First name",
             id: "First name",
-            group: getGroup(["Account", "Name"]),
+            group: generateGroup(group, multiLevelGroups, ["Account", "Name"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -322,7 +313,7 @@ function getResizableColumns(amount: number, group: boolean, multiLevelGroups: b
         {
             title: "Last name",
             id: "Last name",
-            group: getGroup(["Account", "Name"]),
+            group: generateGroup(group, multiLevelGroups, ["Account", "Name"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -339,7 +330,7 @@ function getResizableColumns(amount: number, group: boolean, multiLevelGroups: b
         {
             title: "Avatar",
             id: "Avatar",
-            group: getGroup(["Account", "Info"]),
+            group: generateGroup(group, multiLevelGroups, ["Account", "Info"]),
             icon: GridColumnIcon.HeaderImage,
             hasMenu: false,
             getContent: () => {
@@ -357,7 +348,7 @@ function getResizableColumns(amount: number, group: boolean, multiLevelGroups: b
         {
             title: "Email",
             id: "Email",
-            group: getGroup(["Account", "Info"]),
+            group: generateGroup(group, multiLevelGroups, ["Account", "Info"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -374,7 +365,7 @@ function getResizableColumns(amount: number, group: boolean, multiLevelGroups: b
         {
             title: "Title",
             id: "Title",
-            group: getGroup(["Account", "Info"]),
+            group: generateGroup(group, multiLevelGroups, ["Account", "Info"]),
             icon: GridColumnIcon.HeaderString,
             hasMenu: false,
             getContent: () => {
@@ -452,7 +443,7 @@ export function useMockDataGenerator(numCols: number, readonly: boolean = true, 
 
     React.useEffect(() => {
         setColsMap(getResizableColumns(numCols, group, multiLevelGroups));
-    }, [group, numCols]);
+    }, [group, numCols, multiLevelGroups]);
 
     const onColumnResize = React.useCallback((column: GridColumn, newSize: number) => {
         setColsMap(prevColsMap => {

@@ -26,7 +26,7 @@ jobs:
             - uses: JS-DevTools/npm-publish@v1
               with:
                   token: ${{ secrets.NPM_TOKEN }}
-                  access: public
+                  access: restricted
                   package: ./packages/core/package.json
     publish-cells:
         defaults:
@@ -44,7 +44,7 @@ jobs:
             - uses: JS-DevTools/npm-publish@v1
               with:
                   token: ${{ secrets.NPM_TOKEN }}
-                  access: public
+                  access: restricted
                   package: ./packages/cells/package.json
     publish-source:
         defaults:
@@ -62,5 +62,5 @@ jobs:
             - uses: JS-DevTools/npm-publish@v1
               with:
                   token: ${{ secrets.NPM_TOKEN }}
-                  access: public
+                  access: restricted
                   package: ./packages/source/package.json

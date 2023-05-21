@@ -1,5 +1,4 @@
 import type { GridSelection, DataEditorProps, Theme } from "@glideapps/glide-data-grid";
-import { convertToStringArray } from "@glideapps/glide-data-grid/dist/ts/common/utils";
 import React from "react";
 
 type Props = Pick<
@@ -11,6 +10,15 @@ type Result = Pick<
     DataEditorProps,
     "columns" | "onGroupHeaderClicked" | "onGridSelectionChange" | "getGroupDetails" | "gridSelection"
 >;
+
+export function convertToStringArray(arr: string | string[] | undefined) {
+    if (typeof arr === 'string')
+        return [arr];
+    else if (Array.isArray(arr))
+        return arr;
+    else
+        return [""];
+}
 
 export function useCollapsingGroups(props: Props): Result {
     const [collapsed, setCollapsed] = React.useState<readonly string[]>([]);

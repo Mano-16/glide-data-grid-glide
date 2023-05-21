@@ -32,6 +32,7 @@ import {
     headerKind,
     outOfBoundsKind,
     ImageWindowLoader,
+    DrawGroupCallback,
 } from "./data-grid-types";
 import { SpriteManager, SpriteMap } from "./data-grid-sprites";
 import { convertToStringArray, getGroupLevelIndexFromRow, useDebouncedMemo, useEventListener } from "../common/utils";
@@ -43,6 +44,7 @@ import {
     drawGrid,
     DrawGridArg,
     drawHeader,
+    drawGroup,
     getActionBoundsForGroup,
     getHeaderMenuBounds,
     GetRowThemeCallback,
@@ -210,6 +212,19 @@ export interface DataGridProps {
      * @returns `false` if default header rendering should still happen, `true` to cancel rendering.
      */
     readonly drawHeader: DrawHeaderCallback | undefined;
+
+    /**
+     * Overrides the rendering of a group. The grid will call this for every group it needs to render. Group
+     * rendering is not as well optimized because they do not redraw as often, but very heavy drawing methods can
+     * negatively impact horizontal scrolling performance.
+     *
+     * It is possible to return `false` after rendering just a background and the regular foreground rendering
+     * will happen.
+     * @group Drawing
+     * @returns `false` if default group rendering should still happen, `true` to cancel rendering.
+     */
+    readonly drawGroup: DrawGroupCallback | undefined;
+
     /**
      * Controls the drawing of the focus ring.
      * @defaultValue true
@@ -347,6 +362,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         headerIcons,
         verticalBorder,
         drawHeader: drawHeaderCallback,
+        drawGroup: drawGroupCallback,
         drawCustomCell,
         onCellFocused,
         onDragOverCell,
@@ -700,6 +716,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             getRowThemeOverride,
             drawCustomCell,
             drawHeaderCallback,
+            drawGroupCallback,
             prelightCells,
             highlightRegions,
             imageLoader,
@@ -760,6 +777,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         getRowThemeOverride,
         drawCustomCell,
         drawHeaderCallback,
+        drawGroupCallback,
         prelightCells,
         highlightRegions,
         imageLoader,
@@ -1268,6 +1286,26 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                                     drawHeaderCallback,
                                     false
                                 );
+                            } else if (row <= -2) {
+                                ctx.font = `${theme.headerFontStyle} ${theme.fontFamily}`;
+                                ctx.fillStyle = theme.bgHeader;
+                                ctx.fillRect(0, 0, offscreen.width, offscreen.height);
+                                drawGroup(
+                                    ctx,
+                                    0,
+                                    0,
+                                    // boundsForDragTarget.width,
+                                    // boundsForDragTarget.height,
+                                    // mappedColumns[col],
+                                    // false,
+                                    // theme,
+                                    // false,
+                                    // false,
+                                    // 0,
+                                    // spriteManager,
+                                    drawGroupCallback,
+                                    // false
+                                );
                             } else {
                                 ctx.font = `${theme.baseFontStyle} ${theme.fontFamily}`;
                                 ctx.fillStyle = theme.bgCell;
@@ -1327,6 +1365,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             mappedColumns,
             spriteManager,
             drawHeaderCallback,
+            drawGroupCallback,
             getCellContent,
             drawCustomCell,
             imageLoader,

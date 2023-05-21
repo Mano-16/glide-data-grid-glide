@@ -187,6 +187,19 @@ export type DrawHeaderCallback = (args: {
     menuBounds: Rectangle;
 }) => boolean;
 
+export type DrawGroupCallback = (args: {
+    ctx: CanvasRenderingContext2D;
+    theme: Theme;
+    groupTheme: Theme;
+    rect: Rectangle;
+    level: number;
+    span: Item;
+    name: string;
+    icon?: string; 
+    isHovered: boolean;
+    spriteManager: SpriteManager;
+}) => boolean;
+
 /** @category Cells */
 export enum GridCellKind {
     Uri = "uri",

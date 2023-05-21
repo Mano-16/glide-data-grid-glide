@@ -19,6 +19,7 @@ import {
     TrailingRowType,
     ImageWindowLoader,
     GridCell,
+    DrawGroupCallback,
 } from "./data-grid-types";
 import groupBy from "lodash/groupBy.js";
 import type { HoverValues } from "./animation-manager";
@@ -524,25 +525,22 @@ function drawGroups(
     _hoverValues: HoverValues,
     verticalBorder: (col: number) => boolean,
     getGroupDetails: GroupDetailsCallback,
+    drawGroupCallback: DrawGroupCallback | undefined,
     damage: CellList | undefined
 ) {
-    const xPad = 8;
     const [hCol, hRow] = hovered?.[0] ?? [];
     const hGroupLevelIndex = getGroupLevelIndexFromRow(hRow ?? 0, groupHeaderLevels);
     let finalX = 0;
     let eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels; // TODO: handle group height based on level
 
     walkGroups(effectiveCols, width, translateX, groupHeaderLevels, eachGroupHeaderHeight, (span, groupName, x, y, w, h, level) => {
+        // if (damage !== undefined && !damage.some(d => d[1] == -2 && d[0] >= span[0] && d[0] <= span[1])) return;
         if (damage !== undefined) {
             const toRender = damage.some(d => {
                 if (getGroupLevelIndexFromRow(d[1], groupHeaderLevels) === level && d[0] >= span[0] && d[0] <= span[1]) return true;
             });
             if (!toRender) return; 
         }
-
-        console.log('Walk Groups', groupName, level, damage);
-        // if (damage !== undefined && !damage.some(d => d[1] <= -2 && d[0] >= span[0] && d[0] <= span[1])) return;
-        // if (damage !== undefined && !damage.some(d => d[1] <= -2 && d[0] >= span[0] && w < width)) return;
 
         ctx.save();
         ctx.beginPath();
@@ -558,33 +556,13 @@ function drawGroups(
         ctx.fillStyle = fillColor;
         ctx.fill();
 
-        ctx.fillStyle = groupTheme.textGroupHeader ?? groupTheme.textHeader;
         if (group !== undefined) {
-            let drawX = x;
-            if (group.icon !== undefined) {
-                spriteManager.drawSprite(
-                    group.icon,
-                    "normal",
-                    ctx,
-                    drawX + xPad,
-                    y + (eachGroupHeaderHeight - 20) / 2,
-                    20,
-                    groupTheme
-                );
-                drawX += 26;
-            }
-            ctx.fillText(
-                group.name,
-                drawX + xPad,
-                y + eachGroupHeaderHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
-            );
-
             if (group.actions !== undefined && isHovered) {
                 const actionBoxes = getActionBoundsForGroup({ x, y, width: w, height: h }, group.actions);
-
+        
                 ctx.beginPath();
                 const fadeStartX = actionBoxes[0].x - 10;
-                const fadeWidth = x + w - fadeStartX;
+                const fadeWidth = x + width - fadeStartX;
                 ctx.rect(fadeStartX, y, fadeWidth, eachGroupHeaderHeight);
                 const grad = ctx.createLinearGradient(fadeStartX, y, fadeStartX + fadeWidth, 0);
                 const trans = withAlpha(fillColor, 0);
@@ -592,11 +570,11 @@ function drawGroups(
                 grad.addColorStop(10 / fadeWidth, fillColor);
                 grad.addColorStop(1, fillColor);
                 ctx.fillStyle = grad;
-
+        
                 ctx.fill();
-
+        
                 ctx.globalAlpha = 0.6;
-
+        
                 // eslint-disable-next-line prefer-const
                 const [mouseX, mouseY] = hovered?.[1] ?? [-1, -1];
                 for (let i = 0; i < group.actions.length; i++) {
@@ -619,11 +597,29 @@ function drawGroups(
                         ctx.globalAlpha = 0.6;
                     }
                 }
-
+        
                 ctx.globalAlpha = 1;
             }
+
+            drawGroup(
+                ctx,
+                x,
+                y,
+                w,
+                h,
+                level,
+                span,
+                group,
+                eachGroupHeaderHeight,
+                theme,
+                groupTheme,
+                isHovered,
+                spriteManager,
+                drawGroupCallback
+            );
         }
 
+        // draw vertical grid lines
         // if (x !== 0 && verticalBorder(span[0])) {
         //     ctx.beginPath();
         //     ctx.moveTo(x + 0.5, y);
@@ -637,7 +633,7 @@ function drawGroups(
         finalX = x + w;
     });
     
-    // draw line separators between groups
+    // draw horizontal line separators between groups
     // if (!damage) {
     //     ctx.beginPath();
     //     for (let level = 1; level <= groupHeaderLevels; level++) {
@@ -668,6 +664,66 @@ export function getHeaderMenuBounds(x: number, y: number, width: number, height:
         width: menuButtonSize,
         height: Math.min(menuButtonSize, height),
     };
+}
+
+export function drawGroup (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    level: number,
+    span: Item,
+    group: GroupDetails,
+    groupHeight: number,
+    theme: Theme,
+    groupTheme: Theme,
+    isHovered: boolean,
+    spriteManager: SpriteManager,
+    drawGroupCallback: DrawGroupCallback | undefined,
+) {
+    if (drawGroupCallback !== undefined) {
+        if (
+            drawGroupCallback({
+                ctx,
+                theme,
+                groupTheme,
+                rect: { x, y, width, height },
+                level,
+                span,
+                name: group.name,
+                icon: group.icon,
+                isHovered,
+                spriteManager
+            })
+        ) {
+            return;
+        }
+    }
+
+    const xPad = 8;
+    let drawX = x;
+    
+    ctx.fillStyle = groupTheme.textGroupHeader ?? groupTheme.textHeader;
+
+    if (group.icon !== undefined) {
+        spriteManager.drawSprite(
+            group.icon,
+            "normal",
+            ctx,
+            drawX + xPad,
+            y + (groupHeight - 20) / 2,
+            20,
+            groupTheme
+        );
+        drawX += 26;
+    }
+
+    ctx.fillText(
+        group.name,
+        drawX + xPad,
+        y + groupHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
+    );
 }
 
 export function drawHeader(
@@ -832,6 +888,7 @@ function drawGridHeaders(
     getGroupDetails: GroupDetailsCallback,
     damage: CellList | undefined,
     drawHeaderCallback: DrawHeaderCallback | undefined,
+    drawGroupCallback: DrawGroupCallback | undefined,
     touchMode: boolean
 ) {
     const totalHeaderHeight = headerHeight + groupHeaderHeight;
@@ -865,10 +922,12 @@ function drawGridHeaders(
                 // : { ...outerTheme, ...groupTheme, ...c.themeOverride };
                    : { ...outerTheme, ...c.themeOverride }; 
 
-        if (theme.bgHeader !== outerTheme.bgHeader) {
-            ctx.fillStyle = theme.bgHeader;
-            ctx.fill();
-        }
+        // if (theme.bgHeader !== outerTheme.bgHeader) {
+        //     ctx.fillStyle = theme.bgHeader;
+        //     ctx.fill();
+        // }
+        ctx.fillStyle = theme.bgHeader;
+        ctx.fill();
 
         const f = `${theme.headerFontStyle} ${theme.fontFamily}`;
         if (font !== f) {
@@ -939,6 +998,7 @@ function drawGridHeaders(
             hoverValues,
             verticalBorder,
             getGroupDetails,
+            drawGroupCallback,
             damage
         );
     }
@@ -1910,6 +1970,7 @@ export interface DrawGridArg {
     readonly getRowThemeOverride: GetRowThemeCallback | undefined;
     readonly drawCustomCell: DrawCustomCellCallback | undefined;
     readonly drawHeaderCallback: DrawHeaderCallback | undefined;
+    readonly drawGroupCallback: DrawGroupCallback | undefined;
     readonly prelightCells: CellList | undefined;
     readonly highlightRegions: readonly Highlight[] | undefined;
     readonly imageLoader: ImageWindowLoader;
@@ -2017,6 +2078,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         isFocused,
         drawCustomCell,
         drawHeaderCallback,
+        drawGroupCallback,
         prelightCells,
         highlightRegions,
         imageLoader,
@@ -2145,6 +2207,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             getGroupDetails,
             damage,
             drawHeaderCallback,
+            drawGroupCallback,
             touchMode
         );
 

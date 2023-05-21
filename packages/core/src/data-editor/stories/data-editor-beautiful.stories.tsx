@@ -5,6 +5,7 @@ import * as React from "react";
 import {
     CellArray,
     CompactSelection,
+    DrawGroupCallback,
     DrawHeaderCallback,
     GridCell,
     GridCellKind,
@@ -2711,6 +2712,52 @@ export const ColumnGroups: React.VFC = () => {
     },
 };
 
+export const CustomColumnGroups: React.VFC = () => {
+    const { cols, getCellContent, getCellsForSelection } = useMockDataGenerator(20, true, true);
+    const drawGroup: DrawGroupCallback = React.useCallback(args => {
+        const { ctx, rect } = args;
+        ctx.rect(rect.x, rect.y, rect.width, rect.height);
+        const lg = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.height);
+        lg.addColorStop(0, "#ff00d934");
+        lg.addColorStop(1, "#00a2ff34");
+        ctx.fillStyle = lg;
+        ctx.fill();
+        return false;
+    }, []);
+
+    return (
+        <BeautifulWrapper
+            title="Custom Column Grouping"
+            description={
+                <Description>
+                    Groups can be customized using the <PropName>drawGroup</PropName> property;
+                </Description>
+            }>
+            <DataEditor
+                {...defaultProps}
+                getCellContent={getCellContent}
+                onGroupHeaderRenamed={(x, y) => window.alert(`Please rename group ${x} to ${y}`)}
+                columns={cols}
+                getCellsForSelection={getCellsForSelection}
+                freezeColumns={0}
+                rows={1000}
+                groupHeaderHeight={36}
+                getGroupDetails={g => ({
+                    name: g,
+                    icon: g === "" ? undefined : GridColumnIcon.HeaderCode,
+                })}
+                drawGroup={drawGroup}
+                rowMarkers="checkbox"
+            />
+        </BeautifulWrapper>
+    );
+};
+(CustomColumnGroups as any).parameters = {
+    options: {
+        showPanel: false,
+    },
+};
+
 export const MultiLevelColumnGroups: React.VFC = () => {
     const { cols, getCellContent, getCellsForSelection } = useMockDataGenerator(20, true, true, true);
 
@@ -2728,7 +2775,7 @@ export const MultiLevelColumnGroups: React.VFC = () => {
                 onGroupHeaderRenamed={(x, y) => window.alert(`Please rename group ${x} to ${y}`)}
                 columns={cols}
                 getCellsForSelection={getCellsForSelection}
-                freezeColumns={0}
+                freezeColumns={2}
                 rows={1000}
                 groupHeaderHeight={72}
                 groupHeaderLevels={2}

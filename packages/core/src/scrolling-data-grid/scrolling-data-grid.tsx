@@ -412,6 +412,7 @@ const GridScroller: React.FunctionComponent<ScrollingDataGridProps> = p => {
                 drawCustomCell={p.drawCustomCell}
                 drawFocusRing={p.drawFocusRing}
                 drawHeader={p.drawHeader}
+                drawGroup={p.drawGroup}
                 experimental={p.experimental}
                 gridRef={p.gridRef}
                 headerIcons={p.headerIcons}

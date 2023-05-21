@@ -81,6 +81,7 @@ export function Simplenotest() {
             cellXOffset={x}
             cellYOffset={y}
             drawHeader={undefined}
+            drawGroup={undefined}
             experimental={undefined}
             headerIcons={undefined}
             isDraggable={undefined}
@@ -137,6 +138,7 @@ export function Simplenotest() {
             }}
             firstColAccessible={true}
             groupHeaderHeight={34}
+            groupHeaderLevels={1}
             headerHeight={44}
             trailingRowType={"none"}
             rowHeight={34}

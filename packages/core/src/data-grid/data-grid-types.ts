@@ -195,6 +195,7 @@ export type DrawGroupCallback = (args: {
     level: number;
     span: Item;
     name: string;
+    displayName?: string;
     icon?: string; 
     isHovered: boolean;
     spriteManager: SpriteManager;

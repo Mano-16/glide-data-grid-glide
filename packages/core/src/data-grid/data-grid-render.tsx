@@ -64,6 +64,7 @@ export interface Highlight {
 
 interface GroupDetails {
     readonly name: string;
+    readonly title?: string;
     readonly icon?: string;
     readonly overrideTheme?: Partial<Theme>;
     readonly actions?: readonly {
@@ -609,6 +610,7 @@ function drawGroups(
                 h,
                 level,
                 span,
+                groupName,
                 group,
                 eachGroupHeaderHeight,
                 theme,
@@ -674,6 +676,7 @@ export function drawGroup (
     height: number,
     level: number,
     span: Item,
+    groupName: string,
     group: GroupDetails,
     groupHeight: number,
     theme: Theme,
@@ -689,8 +692,9 @@ export function drawGroup (
         rect: { x, y, width, height },
         level,
         span,
-        name: group.name,
-        icon: group.icon,
+        name: groupName,
+        displayName: group?.name,
+        icon: group?.icon,
         isHovered,
         spriteManager
     })) {
@@ -716,7 +720,7 @@ export function drawGroup (
     }
 
     ctx.fillText(
-        group.name,
+        group?.name || groupName || "",
         drawX + xPad,
         y + groupHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
     );

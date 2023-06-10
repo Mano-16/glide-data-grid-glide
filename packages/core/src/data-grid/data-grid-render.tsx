@@ -1489,7 +1489,7 @@ function walkAllVisibleCells(
     getRowHeight: (row: number) => number,
     trailingRowType: TrailingRowType,
 ): VisibleCellMeta[] | undefined {
-    const resultCells = new Map<string, VisibleCellMeta>();
+    const resultCells: VisibleCellMeta[] = [];
     let toDraw =  Number.MAX_SAFE_INTEGER;
     walkColumns(
         effectiveColumns,
@@ -1506,13 +1506,13 @@ function walkAllVisibleCells(
                 rows,
                 getRowHeight,
                 trailingRowType,
-                (drawY, row, rh, _) => {
+                (drawY, row, rh) => {
                     if (row < 0) return;
-                    let cellX = drawX;
-                    let cellWidth = c.width;
-                    const cellKey = `${row}:${c.sourceIndex}`;
+                    const cellX = drawX;
+                    const cellWidth = c.width;
+                    // const cellKey = `${row}:${c.sourceIndex}`;
 
-                    resultCells.set(cellKey, {
+                    resultCells.push({
                         row: row,
                         col: c.sourceIndex,
                         x: cellX,
@@ -1528,7 +1528,7 @@ function walkAllVisibleCells(
             return toDraw <= 0;
         }
     );
-    return Array.from(resultCells.values());
+    return resultCells;
 }
 
 function drawBlanks(

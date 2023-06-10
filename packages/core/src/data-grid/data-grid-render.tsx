@@ -20,6 +20,7 @@ import {
     ImageWindowLoader,
     GridCell,
     DrawGroupCallback,
+    VisibleCellMeta,
 } from "./data-grid-types";
 import groupBy from "lodash/groupBy.js";
 import type { HoverValues } from "./animation-manager";
@@ -1477,6 +1478,59 @@ function drawCells(
     return result;
 }
 
+function walkAllVisibleCells(
+    effectiveColumns: readonly MappedGridColumn[],
+    height: number,
+    totalHeaderHeight: number,
+    translateX: number,
+    translateY: number,
+    cellYOffset: number,
+    rows: number,
+    getRowHeight: (row: number) => number,
+    trailingRowType: TrailingRowType,
+): VisibleCellMeta[] | undefined {
+    const resultCells = new Map<string, VisibleCellMeta>();
+    let toDraw =  Number.MAX_SAFE_INTEGER;
+    walkColumns(
+        effectiveColumns,
+        cellYOffset,
+        translateX,
+        translateY,
+        totalHeaderHeight,
+        (c, drawX, colDrawStartY, _, startRow) => {
+
+            walkRowsInCol(
+                startRow,
+                colDrawStartY,
+                height,
+                rows,
+                getRowHeight,
+                trailingRowType,
+                (drawY, row, rh, _) => {
+                    if (row < 0) return;
+                    let cellX = drawX;
+                    let cellWidth = c.width;
+                    const cellKey = `${row}:${c.sourceIndex}`;
+
+                    resultCells.set(cellKey, {
+                        row: row,
+                        col: c.sourceIndex,
+                        x: cellX,
+                        y: drawY,
+                        w: cellWidth,
+                        h: rh,
+                    });
+                    toDraw--;
+                    return toDraw <= 0;
+                }
+            );
+
+            return toDraw <= 0;
+        }
+    );
+    return Array.from(resultCells.values());
+}
+
 function drawBlanks(
     ctx: CanvasRenderingContext2D,
     effectiveColumns: readonly MappedGridColumn[],
@@ -1985,6 +2039,23 @@ export interface DrawGridArg {
     readonly getCellRenderer: GetCellRendererCallback;
 }
 
+export interface WalkGridArg {
+    readonly width: number;
+    readonly height: number;
+    readonly cellXOffset: number;
+    readonly cellYOffset: number;
+    readonly translateX: number;
+    readonly translateY: number;
+    readonly mappedColumns: readonly MappedGridColumn[];
+    readonly enableGroups: boolean;
+    readonly dragAndDropState: DragAndDropState | undefined;
+    readonly headerHeight: number;
+    readonly groupHeaderHeight: number;
+    readonly rowHeight: number | ((index: number) => number);
+    readonly lastRowSticky: TrailingRowType;
+    readonly rows: number;
+}
+
 function computeCanBlit(current: DrawGridArg, last: DrawGridArg | undefined): boolean | number {
     if (last === undefined) return false;
     if (
@@ -2044,6 +2115,43 @@ function computeCanBlit(current: DrawGridArg, last: DrawGridArg | undefined): bo
     return true;
 }
 
+export function walkGrid(arg: WalkGridArg): VisibleCellMeta[] | undefined {
+    const {
+        width,
+        height,
+        cellXOffset,
+        cellYOffset,
+        translateX,
+        translateY,
+        mappedColumns,
+        enableGroups,
+        dragAndDropState,
+        headerHeight,
+        groupHeaderHeight,
+        rowHeight,
+        lastRowSticky: trailingRowType,
+        rows,
+    } = arg;
+    if (width === 0 || height === 0) return;
+
+    const totalHeaderHeight = enableGroups ? groupHeaderHeight + headerHeight : headerHeight;
+
+    const getRowHeight = typeof rowHeight === "number" ? () => rowHeight : rowHeight;
+    const effectiveCols = getEffectiveColumns(mappedColumns, cellXOffset, width, dragAndDropState, translateX);
+
+    return walkAllVisibleCells(
+        effectiveCols,
+        height,
+        totalHeaderHeight,
+        translateX,
+        translateY,
+        cellYOffset,
+        rows,
+        getRowHeight,
+        trailingRowType,
+    );
+}
+
 export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
     const {
         canvas,
@@ -2096,6 +2204,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
     } = arg;
     let { damage } = arg;
     if (width === 0 || height === 0) return;
+
     const doubleBuffer = renderStrategy === "double-buffer";
     const dpr = scrolling ? 1 : Math.ceil(window.devicePixelRatio ?? 1);
 

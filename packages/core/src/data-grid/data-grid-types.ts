@@ -750,3 +750,13 @@ export class CompactSelection {
         }
     }
 }
+
+/** Visible Cell Meta */
+export interface VisibleCellMeta {
+    row: number,
+    col: number,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+}

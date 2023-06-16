@@ -1871,7 +1871,7 @@ function drawFocusRing(
     const [targetCol, targetRow] = selectedCell.current.cell;
     const cell = getCellContent(selectedCell.current.cell);
 
-    if (!cell) {
+    if (cell === null || cell === undefined) {
         return undefined;
     }
 

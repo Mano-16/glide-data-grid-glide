@@ -1870,6 +1870,11 @@ function drawFocusRing(
         return undefined;
     const [targetCol, targetRow] = selectedCell.current.cell;
     const cell = getCellContent(selectedCell.current.cell);
+
+    if (!cell) {
+        return undefined;
+    }
+
     const targetColSpan = cell.span ?? [targetCol, targetCol];
 
     const isStickyRow = trailingRowType === "sticky" && targetRow === rows - 1;

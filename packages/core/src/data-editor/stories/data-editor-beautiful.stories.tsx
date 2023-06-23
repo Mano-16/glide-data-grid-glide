@@ -17,6 +17,7 @@ import {
     isEditableGridCell,
     Item,
     Rectangle,
+    VisibleCellMeta,
 } from "../../data-grid/data-grid-types";
 import { DataEditor, DataEditorProps } from "../data-editor";
 
@@ -1242,9 +1243,51 @@ export const UnevenRows: React.VFC = () => {
     },
 };
 
+export const GetVisibleCells: React.VFC = () => {
+    const { cols, getCellContent } = useMockDataGenerator(6);
+    const ref = React.useRef<DataEditorRef>(null);
+
+    if (ref.current) {
+        setTimeout(() => {
+            const cells: VisibleCellMeta[] | undefined = ref.current?.getVisibleCells();
+            console.log('Visible cells', cells);
+        }, 2000);
+    }
+    return (
+        <BeautifulWrapper
+            title="Draw custom cells"
+            description={
+                <Description>
+                    You can get the visible cells in the viewport using the `gridRef.getVisibleCells()`
+                </Description>
+            }>
+            <DataEditor
+                {...defaultProps}
+                getCellContent={getCellContent}
+                columns={cols}
+                ref={ref}
+                rows={1000}
+            />
+        </BeautifulWrapper>
+    );
+};
+(GetVisibleCells as any).parameters = {
+    options: {
+        showPanel: false,
+    },
+};
+
 export const DrawCustomCells: React.VFC = () => {
     const { cols, getCellContent } = useMockDataGenerator(6);
+    const ref = React.useRef<DataEditorRef>(null);
 
+    if (ref.current) {
+        console.log('Ref', ref.current);
+        setTimeout(() => {
+            const cells: VisibleCellMeta[] | undefined = ref.current?.getVisibleCells();
+            console.log('')
+        }, 2000);
+    }
     return (
         <BeautifulWrapper
             title="Draw custom cells"
@@ -1258,6 +1301,7 @@ export const DrawCustomCells: React.VFC = () => {
                 {...defaultProps}
                 getCellContent={getCellContent}
                 columns={cols}
+                ref={ref}
                 drawCell={args => {
                     const { cell, rect, ctx } = args;
                     if (cell.kind !== GridCellKind.Text) return false;
@@ -2745,6 +2789,7 @@ export const CustomColumnGroups: React.VFC = () => {
                 getGroupDetails={g => ({
                     name: g,
                     icon: g === "" ? undefined : GridColumnIcon.HeaderCode,
+                    
                 })}
                 drawGroup={drawGroup}
                 rowMarkers="checkbox"

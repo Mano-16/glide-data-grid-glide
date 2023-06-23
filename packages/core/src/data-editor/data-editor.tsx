@@ -43,6 +43,7 @@ import {
     CustomCell,
     headerKind,
     gridSelectionHasItem,
+    VisibleCellMeta,
 } from "../data-grid/data-grid-types";
 import DataGridSearch, { DataGridSearchProps } from "../data-grid-search/data-grid-search";
 import { browserIsOSX } from "../common/browser-detect";
@@ -643,6 +644,10 @@ export interface DataEditorRef {
      * Scrolls to the desired cell or location in the grid.
      */
     scrollTo: ScrollToFn;
+    // /**
+    //  * Get all the visible cells in the current viewport
+    //  */
+    getVisibleCells: () => VisibleCellMeta[] | undefined,
 }
 
 const loadingCell: GridCell = {
@@ -3424,6 +3429,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 }
             },
             scrollTo,
+            getVisibleCells: () => {
+                return gridRef.current?.getVisibleCells();
+            },
         }),
         [appendRow, onCopy, onKeyDown, onPasteInternal, rowMarkerOffset, scrollTo]
     );

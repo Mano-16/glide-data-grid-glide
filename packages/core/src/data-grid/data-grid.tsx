@@ -33,6 +33,7 @@ import {
     outOfBoundsKind,
     ImageWindowLoader,
     DrawGroupCallback,
+    VisibleCellMeta,
 } from "./data-grid-types";
 import { SpriteManager, SpriteMap } from "./data-grid-sprites";
 import { convertToStringArray, getGroupLevelIndexFromRow, useDebouncedMemo, useEventListener } from "../common/utils";
@@ -42,6 +43,7 @@ import {
     BlitData,
     drawCell,
     drawGrid,
+    walkGrid,
     DrawGridArg,
     drawHeader,
     getActionBoundsForGroup,
@@ -50,6 +52,7 @@ import {
     GroupDetailsCallback,
     Highlight,
     pointInRect,
+    WalkGridArg,
 } from "./data-grid-render";
 import { AnimationManager, StepCallback } from "./animation-manager";
 import { browserIsFirefox, browserIsSafari } from "../common/browser-detect";
@@ -299,6 +302,7 @@ export interface DataGridRef {
     focus: () => void;
     getBounds: (col: number, row?: number) => Rectangle | undefined;
     damage: (cells: DamageUpdateList) => void;
+    getVisibleCells: () => VisibleCellMeta[] | undefined;
 }
 
 const getRowData = (cell: InnerGridCell, getCellRenderer?: GetCellRendererCallback) => {
@@ -1437,6 +1441,44 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         [canvasRef]
     );
 
+    const getVisibleCells = React.useCallback(
+        () => {
+            const arg: WalkGridArg = {
+                width,
+                height,
+                cellXOffset,
+                cellYOffset,
+                translateX: Math.round(translateX),
+                translateY: Math.round(translateY),
+                mappedColumns,
+                enableGroups,
+                dragAndDropState,
+                headerHeight,
+                groupHeaderHeight,
+                rowHeight,
+                lastRowSticky: trailingRowType,
+                rows,
+            };
+            return walkGrid(arg);
+        },
+        [
+            width,
+            height,
+            cellXOffset,
+            cellYOffset,
+            translateX,
+            translateY,
+            mappedColumns,
+            enableGroups,
+            dragAndDropState,
+            headerHeight,
+            groupHeaderHeight,
+            rowHeight,
+            trailingRowType,
+            rows,
+        ]
+    );
+
     React.useImperativeHandle(
         forwardedRef,
         () => ({
@@ -1464,6 +1506,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                 return getBoundsForItem(canvasRef.current, col, row ?? -1);
             },
             damage,
+            getVisibleCells,
         }),
         [canvasRef, damage, getBoundsForItem]
     );

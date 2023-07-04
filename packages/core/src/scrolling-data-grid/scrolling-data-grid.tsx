@@ -80,6 +80,10 @@ export interface ScrollingDataGridProps extends Props {
      */
     readonly showMinimap: boolean | undefined;
     readonly clientSize: readonly [number, number];
+    /**
+     * The total scrollable height of the grid in pixels. This is used to calculate the scroll bar height.
+     */
+    readonly scrollableHeight: number | undefined;
 }
 
 const MinimapStyle = styled.div`
@@ -137,6 +141,7 @@ const GridScroller: React.FunctionComponent<ScrollingDataGridProps> = p => {
         smoothScrollX = false,
         smoothScrollY = false,
         isDraggable,
+        scrollableHeight = 0,
     } = p;
     const { paddingRight, paddingBottom } = experimental ?? {};
 
@@ -155,7 +160,9 @@ const GridScroller: React.FunctionComponent<ScrollingDataGridProps> = p => {
     }, [columns, overscrollX]);
 
     let height = enableGroups ? headerHeight + groupHeaderHeight : headerHeight;
-    if (typeof rowHeight === "number") {
+    if (scrollableHeight) {
+        height = scrollableHeight;
+    } else if (typeof rowHeight === "number") {
         height += rows * rowHeight;
     } else {
         for (let r = 0; r < rows; r++) {

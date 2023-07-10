@@ -1250,6 +1250,7 @@ export const GetVisibleCells: React.VFC = () => {
     if (ref.current) {
         setTimeout(() => {
             const cells: VisibleCellMeta[] | undefined = ref.current?.getVisibleCells();
+            // eslint-disable-next-line no-console
             console.log('Visible cells', cells);
         }, 2000);
     }
@@ -1282,9 +1283,11 @@ export const DrawCustomCells: React.VFC = () => {
     const ref = React.useRef<DataEditorRef>(null);
 
     if (ref.current) {
+        // eslint-disable-next-line no-console
         console.log('Ref', ref.current);
         setTimeout(() => {
             const cells: VisibleCellMeta[] | undefined = ref.current?.getVisibleCells();
+            // eslint-disable-next-line no-console
             console.log('')
         }, 2000);
     }

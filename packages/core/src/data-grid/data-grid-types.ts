@@ -435,6 +435,7 @@ export interface TextCell extends BaseGridCell {
     readonly data: string;
     readonly readonly?: boolean;
     readonly allowWrapping?: boolean;
+    readonly underline?: boolean;
 }
 
 /** @category Cells */
@@ -443,6 +444,7 @@ export interface NumberCell extends BaseGridCell {
     readonly displayData: string;
     readonly data: number | undefined;
     readonly readonly?: boolean;
+    readonly underline?: boolean;
 }
 
 /** @category Cells */

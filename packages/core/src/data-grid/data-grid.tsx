@@ -1508,7 +1508,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             damage,
             getVisibleCells,
         }),
-        [canvasRef, damage, getBoundsForItem]
+        [canvasRef, damage, getBoundsForItem, getVisibleCells]
     );
 
     const lastFocusedSubdomNode = React.useRef<Item>();

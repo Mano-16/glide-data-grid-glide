@@ -38,7 +38,7 @@ export function useMappedColumns(
 }
 
 export function isGroupEqual(left: string | undefined = "", right: string | undefined = ""): boolean {
-    // const leftValue = left ?? ""; 
+    // const leftValue = left ?? "";
     // const rightValue = right ?? "";
     return left === right;
 }
@@ -372,7 +372,14 @@ export function prepTextCell(
 }
 
 /** @category Drawing */
-export function drawTextCellExternal(args: BaseDrawArgs, data: string, contentAlign?: BaseGridCell["contentAlign"], allowWrapping?: boolean, hyperWrapping?: boolean) {
+export function drawTextCellExternal(
+    args: BaseDrawArgs,
+    data: string,
+    contentAlign?: BaseGridCell["contentAlign"],
+    allowWrapping?: boolean,
+    hyperWrapping?: boolean,
+    underline?: boolean,
+) {
     const { rect, ctx, theme } = args;
 
     ctx.fillStyle = theme.textDark;
@@ -385,7 +392,8 @@ export function drawTextCellExternal(args: BaseDrawArgs, data: string, contentAl
         data,
         contentAlign,
         allowWrapping,
-        hyperWrapping
+        hyperWrapping,
+        underline,
     );
 }
 
@@ -398,15 +406,71 @@ function drawSingleTextLine(
     h: number,
     bias: number,
     theme: Theme,
+    contentAlign?: BaseGridCell["contentAlign"],
+    underline: boolean = false,
+) {
+    let textX = x;
+    let textY = y;
+    if (contentAlign === "right") {
+        textX = x + w - (theme.cellHorizontalPadding + 0.5);
+        textY = y + h / 2 + bias;
+        ctx.fillText(data, textX, textY);
+    } else if (contentAlign === "center") {
+        textX = x + w / 2;
+        textY = y + h / 2 + bias;
+        ctx.fillText(data, textX, textY);
+    } else {
+        textX = x + theme.cellHorizontalPadding + 0.5;
+        textY = y + h / 2 + bias;
+        ctx.fillText(data, textX, textY);
+    }
+    if (underline) drawUnderline(ctx, data, theme, textX, textY, contentAlign);
+}
+
+function drawUnderline(
+    ctx: CanvasRenderingContext2D,
+    data: string,
+    theme: Theme,
+    x: number,
+    y: number,
     contentAlign?: BaseGridCell["contentAlign"]
 ) {
-    if (contentAlign === "right") {
-        ctx.fillText(data, x + w - (theme.cellHorizontalPadding + 0.5), y + h / 2 + bias);
-    } else if (contentAlign === "center") {
-        ctx.fillText(data, x + w / 2, y + h / 2 + bias);
-    } else {
-        ctx.fillText(data, x + theme.cellHorizontalPadding + 0.5, y + h / 2 + bias);
+    const font = `${theme.baseFontStyle} ${theme.fontFamily}`;
+    const textWidth = measureTextCached(data, ctx, font)?.width;
+    const emHeight = getEmHeight(ctx, font);
+
+    const fontStyles = theme.baseFontStyle?.split(" ");
+    const fontSize = fontStyles?.[fontStyles.length - 1];
+
+    let underlineHeight = Number.parseInt(fontSize, 10) / 15;
+    if (underlineHeight < 1) {
+        underlineHeight = 1;
     }
+
+    let startX = 0;
+    let endX = 0;
+    if (contentAlign === "center") {
+        startX = x - textWidth / 2;
+        endX = x + textWidth / 2;
+    } else if (contentAlign === "right") {
+        startX = x - textWidth;
+        endX = x;
+    } else {
+        startX = x;
+        endX = x + textWidth;
+    }
+
+    const startY = y + emHeight / 2;
+    const endY = startY;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = underlineHeight;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = theme.textDark;
+    ctx.stroke();
+    ctx.restore();
 }
 
 function getEmHeight(ctx: CanvasRenderingContext2D, fontStyle: string): number {
@@ -420,7 +484,8 @@ export function drawTextCell(
     data: string,
     contentAlign?: BaseGridCell["contentAlign"],
     allowWrapping?: boolean,
-    hyperWrapping?: boolean
+    hyperWrapping?: boolean,
+    underline: boolean = false,
 ) {
     const { ctx, rect, theme } = args;
 
@@ -465,7 +530,7 @@ export function drawTextCell(
         }
 
         if (!allowWrapping) {
-            drawSingleTextLine(ctx, data, x, y, w, h, bias, theme, contentAlign);
+            drawSingleTextLine(ctx, data, x, y, w, h, bias, theme, contentAlign, underline);
         } else {
             const fontStyle = `${theme.fontFamily} ${theme.baseFontStyle}`;
             const split = splitText(ctx, data, fontStyle, w - theme.cellHorizontalPadding * 2, hyperWrapping ?? false);
@@ -486,7 +551,7 @@ export function drawTextCell(
             const optimalY = y + h / 2 - actualHeight / 2;
             let drawY = Math.max(y + theme.cellVerticalPadding, optimalY);
             for (const line of split) {
-                drawSingleTextLine(ctx, line, x, drawY, w, emHeight, bias, theme, contentAlign);
+                drawSingleTextLine(ctx, line, x, drawY, w, emHeight, bias, theme, contentAlign, underline);
                 drawY += lineHeight;
                 if (drawY > y + h) break;
             }
@@ -1250,7 +1315,6 @@ export function computeBounds(
         const group = convertToStringArray(mappedColumns[col].group)[groupLevelIndex];
         const sticky = mappedColumns[col].sticky;
 
-
         while (
             start > 0 &&
             isGroupEqual(convertToStringArray(mappedColumns[start - 1].group)[groupLevelIndex], group) &&
@@ -1284,7 +1348,6 @@ export function computeBounds(
                 result.width = width - result.x;
             }
         }
-
     } else if (lastRowSticky && row === rows - 1) {
         const stickyHeight = typeof rowHeight === "number" ? rowHeight : rowHeight(row);
         result.y = height - stickyHeight;

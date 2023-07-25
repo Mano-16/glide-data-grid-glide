@@ -602,6 +602,11 @@ export interface DataEditorProps extends Props {
     readonly customRenderers?: readonly CustomRenderer<CustomCell<any>>[];
 
     readonly scaleToRem?: boolean;
+
+    /**
+     * The Callback to handle auto size column.
+     */
+    readonly onColumnAutoSize?: (col: number) => void;
 }
 
 type ScrollToFn = (
@@ -780,6 +785,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         groupHeaderLevels: groupHeaderLevelsIn = 1,
         theme: themeIn,
         scrollableHeight,
+        onColumnAutoSize,
     } = p;
 
     const minColumnWidth = Math.max(minColumnWidthIn, 20);
@@ -2112,7 +2118,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 }
 
                 if (args.isEdge) {
-                    void normalSizeColumn(col);
+                    if (onColumnAutoSize) onColumnAutoSize(col);
+                    else void normalSizeColumn(col);
                 } else if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
                     onHeaderClicked?.(clickLocation, { ...args, preventDefault });
                 }
@@ -2157,6 +2164,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             normalSizeColumn,
             onHeaderClicked,
             handleGroupHeaderSelection,
+            onColumnAutoSize,
         ]
     );
 

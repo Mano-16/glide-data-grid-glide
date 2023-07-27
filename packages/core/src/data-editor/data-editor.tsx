@@ -606,7 +606,7 @@ export interface DataEditorProps extends Props {
     /**
      * The Callback to handle auto size column.
      */
-    readonly onColumnAutoSize?: (col: number) => void;
+    readonly onColumnAutoSize?: (col: number, cells: { start: number, count: number }) => number;
     
      /** Emitted when a column header is double clicked.
      * @group Events
@@ -1967,22 +1967,28 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     cells = await cells();
                 }
                 const inputCol = columns[col - rowMarkerOffset];
-                const offscreen = document.createElement("canvas");
-                const ctx = offscreen.getContext("2d", { alpha: false });
-                if (ctx !== null) {
-                    ctx.font = `${mergedTheme.baseFontStyle} ${mergedTheme.fontFamily}`;
-                    const newCol = measureColumn(
-                        ctx,
-                        mergedTheme,
-                        inputCol,
-                        0,
-                        cells,
-                        minColumnWidth,
-                        maxColumnWidth,
-                        false,
-                        getCellRenderer
-                    );
-                    onColumnResize?.(inputCol, newCol.width, col, newCol.width);
+                if (onColumnAutoSize) {
+                    const calcWidth = onColumnAutoSize(col, { start, count: end}); 
+                    onColumnResize?.(inputCol, calcWidth, col, calcWidth);
+                }
+                else {
+                    const offscreen = document.createElement("canvas");
+                    const ctx = offscreen.getContext("2d", { alpha: false });
+                    if (ctx !== null) {
+                        ctx.font = `${mergedTheme.baseFontStyle} ${mergedTheme.fontFamily}`;
+                        const newCol = measureColumn(
+                            ctx,
+                            mergedTheme,
+                            inputCol,
+                            0,
+                            cells,
+                            minColumnWidth,
+                            maxColumnWidth,
+                            false,
+                            getCellRenderer
+                        );
+                        onColumnResize?.(inputCol, newCol.width, col, newCol.width);
+                    }
                 }
             }
         },
@@ -1996,6 +2002,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             rowMarkerOffset,
             rows,
             getCellRenderer,
+            onColumnAutoSize,
         ]
     );
 
@@ -2124,8 +2131,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 }
 
                 if (args.isEdge) {
-                    if (onColumnAutoSize) onColumnAutoSize(col);
-                    else void normalSizeColumn(col);
+                    void normalSizeColumn(col);
                 } else if (mouseDownData.current?.wasDoubleClick === true) {
                     onColumnHeaderDblClick?.(clickLocation, { ...args, preventDefault })
                 } else if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
@@ -2172,7 +2178,6 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             normalSizeColumn,
             onHeaderClicked,
             handleGroupHeaderSelection,
-            onColumnAutoSize,
         ]
     );
 

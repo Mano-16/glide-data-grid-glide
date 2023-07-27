@@ -44,7 +44,7 @@
         "canvas"
     ],
     "dependencies": {
-        "@lumel/glide-data-grid": "5.4.7"
+        "@lumel/glide-data-grid": "5.4.8"
     },
     "peerDependencies": {
         "lodash": "^4.17.19",

@@ -607,6 +607,11 @@ export interface DataEditorProps extends Props {
      * The Callback to handle auto size column.
      */
     readonly onColumnAutoSize?: (col: number) => void;
+    
+     /** Emitted when a column header is double clicked.
+     * @group Events
+     */
+    readonly onColumnHeaderDblClick?: (colIndex: number, event: HeaderClickedEventArgs) => void;
 }
 
 type ScrollToFn = (
@@ -786,6 +791,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         theme: themeIn,
         scrollableHeight,
         onColumnAutoSize,
+        onColumnHeaderDblClick,
     } = p;
 
     const minColumnWidth = Math.max(minColumnWidthIn, 20);
@@ -2120,6 +2126,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 if (args.isEdge) {
                     if (onColumnAutoSize) onColumnAutoSize(col);
                     else void normalSizeColumn(col);
+                } else if (mouseDownData.current?.wasDoubleClick === true) {
+                    onColumnHeaderDblClick?.(clickLocation, { ...args, preventDefault })
                 } else if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
                     onHeaderClicked?.(clickLocation, { ...args, preventDefault });
                 }

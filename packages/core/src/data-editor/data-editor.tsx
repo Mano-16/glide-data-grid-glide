@@ -608,10 +608,15 @@ export interface DataEditorProps extends Props {
      */
     readonly onColumnAutoSize?: (col: number) => void;
     
-     /** Emitted when a column header is double clicked.
+     /** Emitted when a header is double clicked.
      * @group Events
      */
     readonly onColumnHeaderDblClick?: (colIndex: number, event: HeaderClickedEventArgs) => void;
+
+    /** Emitted when a group-header(column) is double clicked.
+     * @group Events
+     */
+    readonly onColumnGroupHeaderDblClick?: (colIndex: number, event: GroupHeaderClickedEventArgs) => void;
 }
 
 type ScrollToFn = (
@@ -792,6 +797,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         scrollableHeight,
         onColumnAutoSize,
         onColumnHeaderDblClick,
+        onColumnGroupHeaderDblClick,
     } = p;
 
     const minColumnWidth = Math.max(minColumnWidthIn, 20);
@@ -935,7 +941,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         )
     );
 
-    const drawHeader = whenDefined(
+    const drawHeader = whenDefined( //
         drawHeaderIn,
         React.useCallback<NonNullable<typeof drawHeaderIn>>(
             args => {
@@ -1856,8 +1862,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             });
             lastMouseSelectLocation.current = undefined;
 
-            if (!args.isTouch) {
-                handleSelect(args);
+            if (!args.isTouch && !wasDoubleClick) {
+                handleSelect(args); //
             }
         },
         [gridSelection, handleSelect]
@@ -2127,7 +2133,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     if (onColumnAutoSize) onColumnAutoSize(col);
                     else void normalSizeColumn(col);
                 } else if (mouseDownData.current?.wasDoubleClick === true) {
-                    onColumnHeaderDblClick?.(clickLocation, { ...args, preventDefault })
+                    onColumnHeaderDblClick?.(clickLocation, { ...args, preventDefault });
                 } else if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
                     onHeaderClicked?.(clickLocation, { ...args, preventDefault });
                 }
@@ -2137,8 +2143,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 if (clickLocation < 0) {
                     return;
                 }
-
-                if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
+                if(mouseDownData.current?.wasDoubleClick === true) {
+                    onColumnGroupHeaderDblClick?.(clickLocation, { ...args, preventDefault });
+                } else if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
                     onGroupHeaderClicked?.(clickLocation, { ...args, preventDefault });
                     if (!isPrevented.current) {
                         handleGroupHeaderSelection(args);
@@ -2173,6 +2180,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             onHeaderClicked,
             handleGroupHeaderSelection,
             onColumnAutoSize,
+            onColumnHeaderDblClick,
+            onColumnGroupHeaderDblClick
         ]
     );
 

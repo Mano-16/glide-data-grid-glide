@@ -541,7 +541,7 @@ function drawGroups(
             const toRender = damage.some(d => {
                 if (getGroupLevelIndexFromRow(d[1], groupHeaderLevels) === level && d[0] >= span[0] && d[0] <= span[1]) return true;
             });
-            if (!toRender) return; 
+            if (!toRender) return;
         }
 
         ctx.save();
@@ -2409,10 +2409,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 true
             );
 
-            // TODO: Causes issue in cell rendering
-            // targetCtx.fillStyle = theme.bgCell;
-            // targetCtx.fillRect(0, totalHeaderHeight + 1, width, height - totalHeaderHeight - 1);
-            // console.log('Clearing rect', height, totalHeaderHeight, groupHeaderHeight, damage);
+            targetCtx.fillStyle = theme.bgCell;
+            targetCtx.fillRect(0, totalHeaderHeight + 1, width, height - totalHeaderHeight - 1);
 
             drawCells(
                 targetCtx,

@@ -542,7 +542,7 @@ function drawGroups(
                 if (getGroupLevelIndexFromRow(d[1], groupHeaderLevels) === level && d[0] >= span[0] && d[0] <= span[1]) return true;
             });
             if (!toRender) return;
-}
+        }
 
         ctx.save();
         ctx.beginPath();

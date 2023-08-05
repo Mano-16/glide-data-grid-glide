@@ -1032,7 +1032,9 @@ function clipDamage(
 
     ctx.beginPath();
 
-    walkGroups(effectiveColumns, width, translateX, groupHeaderLevels, groupHeaderHeight, (span, _group, x, y, w, h) => {
+    const eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels;
+
+    walkGroups(effectiveColumns, width, translateX, groupHeaderLevels, eachGroupHeaderHeight, (span, _group, x, y, w, h) => {
         for (let i = 0; i < damage.length; i++) {
             const d = damage[i];
             if (d[1] <= -2 && d[0] >= span[0] && d[0] <= span[1]) {
@@ -2324,7 +2326,6 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             touchMode
         );
 
-        // Disabled Grid Lines
         // drawGridLines(
         //     overlayCtx,
         //     effectiveCols,

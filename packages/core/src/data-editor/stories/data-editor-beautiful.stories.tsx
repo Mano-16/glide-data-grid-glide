@@ -2814,7 +2814,7 @@ export const MultiLevelColumnGroups: React.VFC = () => {
             title="Multi Level Column Grouping"
             description={
                 <Description>
-                    Columns in the data grid may be grouped by setting their <PropName>group</PropName> property.
+                    You can use multi level grouping by passing an array of groups. Columns in the data grid may be grouped by setting their <PropName>group</PropName> property.
                 </Description>
             }>
             <DataEditor

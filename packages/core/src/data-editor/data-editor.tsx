@@ -490,6 +490,9 @@ export interface DataEditorProps extends Props {
             selected?: Item;
             /** A selection of visible freeze columns */
             freezeRegion?: Rectangle;
+            
+            scrollTop?: number;
+            scrollLeft?: number;
         }
     ) => void;
 
@@ -695,7 +698,6 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const lastSent = React.useRef<[number, number]>();
 
     const {
-        rowMarkers = "none",
         rowMarkerWidth: rowMarkerWidthRaw,
         imageEditorOverride,
         getRowThemeOverride,
@@ -2240,6 +2242,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 tx,
                 ty,
                 extras: {
+                    scrollLeft: scrollRef.current?.scrollLeft,
+                    scrollTop: scrollRef.current?.scrollTop,
                     selected,
                     freezeRegion:
                         freezeColumns === 0

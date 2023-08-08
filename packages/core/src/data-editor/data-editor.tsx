@@ -698,6 +698,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const lastSent = React.useRef<[number, number]>();
 
     const {
+        rowMarkers = "none",
         rowMarkerWidth: rowMarkerWidthRaw,
         imageEditorOverride,
         getRowThemeOverride,

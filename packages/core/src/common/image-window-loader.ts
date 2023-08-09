@@ -4,13 +4,13 @@ import throttle from "lodash/throttle.js";
 interface LoadResult {
     img: HTMLImageElement | undefined;
     cancel: () => void;
-    url: string;
+    // url: string;
     cells: number[];
 }
 
 const rowShift = 1 << 16;
 
-const imgPool: HTMLImageElement[] = [];
+// const imgPool: HTMLImageElement[] = [];
 
 function packColRowToNumber(col: number, row: number) {
     return row * rowShift + col;
@@ -101,22 +101,29 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
     }
 
     private loadImage(url: string, col: number, row: number, key: string, opts: ImageWindowLoaderOptions) {
-        let loaded = false;
-        const img = imgPool.pop() ?? new Image();
+        // let loaded = false;
+        const img = new Image();
 
         let canceled = false;
+
+        // if convertToPNG to png, then draw the svg to a canvas and 
+        if (opts.convertSVGToPNG === true) {
+            url = this.convertSVGImageToPNG(url, opts.svgHeight, opts.svgWidth);
+        }
+
         const result: LoadResult = {
             img: undefined,
             cells: [packColRowToNumber(col, row)],
-            url,
+            // url,
             cancel: () => {
                 if (canceled) return;
                 canceled = true;
-                if (imgPool.length < 12) {
-                    imgPool.unshift(img); // never retain more than 12
-                } else if (!loaded) {
-                    img.src = "";
-                }
+                img.src = "";
+                // if (imgPool.length < 24) {
+                //     imgPool.unshift(img); // never retain more than 12
+                // } else if (!loaded) {
+                //     img.src = "";
+                // }
             },
         };
 
@@ -124,11 +131,6 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
         // use request animation time to avoid paying src set costs during draw calls
         requestAnimationFrame(async () => {
             try {
-                // if convertToPNG to png, then draw the svg to a canvas and 
-                if (opts.convertSVGToPNG === true) {
-                    url = await this.convertSVGImageToPNG(url, opts.svgHeight, opts.svgWidth);
-                }
-
                 img.src = url;
                 await loadPromise;
                 await img.decode();
@@ -139,7 +141,7 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
                     for (const packed of toWrite.cells) {
                         this.loadedLocations.push(unpackNumberToColRow(packed));
                     }
-                    loaded = true;
+                    // loaded = true;
                     this.sendLoaded();
                 }
             } catch {

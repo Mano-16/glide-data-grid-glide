@@ -58,9 +58,15 @@ export interface HeaderClickedEventArgs extends GridMouseHeaderEventArgs, Preven
 export interface GroupHeaderClickedEventArgs extends GridMouseGroupHeaderEventArgs, PreventableEvent {}
 
 /** @category Types */
+export interface ImageWindowLoaderOptions {
+    convertSVGToPNG?: boolean;
+    svgHeight?: number;
+    svgWidth?: number;
+}
 export interface ImageWindowLoader {
     setWindow(newWindow: Rectangle, freezeCols: number): void;
-    loadOrGetImage(url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined;
+    loadOrGetImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined;
+    loadOrGetSVGImage(key: string, url: string, col: number, row: number, options: ImageWindowLoaderOptions): HTMLImageElement | ImageBitmap | undefined;
     setCallback(imageLoaded: (locations: readonly Item[]) => void): void;
 }
 

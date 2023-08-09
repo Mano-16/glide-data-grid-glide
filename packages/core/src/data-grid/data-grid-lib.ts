@@ -1033,7 +1033,7 @@ export function drawDrilldownCell(args: BaseDrawArgs, data: readonly DrilldownCe
         const textWidth = textMetrics.width;
         let imgWidth = 0;
         if (el.img !== undefined) {
-            const img = imageLoader.loadOrGetImage(el.img, col, row);
+            const img = imageLoader.loadOrGetImage(el.img, el.img, col, row);
             if (img !== undefined) {
                 imgWidth = bubbleHeight - 8 + 4;
             }
@@ -1091,7 +1091,7 @@ export function drawDrilldownCell(args: BaseDrawArgs, data: readonly DrilldownCe
         let drawX = rectInfo.x + bubblePad;
 
         if (d.img !== undefined) {
-            const img = imageLoader.loadOrGetImage(d.img, col, row);
+            const img = imageLoader.loadOrGetImage(d.img, d.img, col, row);
             if (img !== undefined) {
                 const imgSize = bubbleHeight - 8;
                 let srcX = 0;
@@ -1131,7 +1131,7 @@ export function drawImage(args: BaseDrawArgs, data: readonly string[], rounding:
     let drawX = x + theme.cellHorizontalPadding;
     for (const i of data) {
         if (i.length === 0) continue;
-        const img = imageLoader.loadOrGetImage(i, col, row);
+        const img = imageLoader.loadOrGetImage(i, i, col, row);
 
         if (img !== undefined) {
             const imgHeight = h - theme.cellVerticalPadding * 2;

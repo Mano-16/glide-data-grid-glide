@@ -32,7 +32,7 @@ const renderer: CustomRenderer<UserProfileCell> = {
 
         const drawX = rect.x + xPad;
 
-        const imageResult = imageLoader.loadOrGetImage(image, col, row);
+        const imageResult = imageLoader.loadOrGetImage(image, image, col, row);
 
         ctx.save();
         ctx.beginPath();

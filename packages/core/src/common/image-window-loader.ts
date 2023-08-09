@@ -1,4 +1,4 @@
-import type { ImageWindowLoader, Item, Rectangle } from "../data-grid/data-grid-types";
+import type { ImageWindowLoader, ImageWindowLoaderOptions, Item, Rectangle } from "../data-grid/data-grid-types";
 import throttle from "lodash/throttle.js";
 
 interface LoadResult {
@@ -100,7 +100,7 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
         this.clearOutOfWindow();
     }
 
-    private loadImage(url: string, col: number, row: number, key: string) {
+    private loadImage(url: string, col: number, row: number, key: string, opts: ImageWindowLoaderOptions) {
         let loaded = false;
         const img = imgPool.pop() ?? new Image();
 
@@ -124,9 +124,15 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
         // use request animation time to avoid paying src set costs during draw calls
         requestAnimationFrame(async () => {
             try {
+                // if convertToPNG to png, then draw the svg to a canvas and 
+                if (opts.convertSVGToPNG === true) {
+                    url = await this.convertSVGImageToPNG(url, opts.svgHeight, opts.svgWidth);
+                }
+
                 img.src = url;
                 await loadPromise;
                 await img.decode();
+
                 const toWrite = this.cache[key];
                 if (toWrite !== undefined && !canceled) {
                     toWrite.img = img;
@@ -143,9 +149,7 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
         this.cache[key] = result;
     }
 
-    public loadOrGetImage(url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
-        const key = url;
-
+    public loadOrGetImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
         const current = this.cache[key];
         if (current !== undefined) {
             const packed = packColRowToNumber(col, row);
@@ -154,9 +158,43 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
             }
             return current.img;
         } else {
-            this.loadImage(url, col, row, key);
+            this.loadImage(url, col, row, key, {});
         }
         return undefined;
+    }
+
+    public loadOrGetSVGImage(key: string, url: string, col: number, row: number, opts: ImageWindowLoaderOptions): HTMLImageElement | ImageBitmap | undefined {
+        const current = this.cache[key];
+        if (current !== undefined) {
+            const packed = packColRowToNumber(col, row);
+            if (!current.cells.includes(packed)) {
+                current.cells.push(packed);
+            }
+            return current.img;
+        } else {
+            this.loadImage(url, col, row, key, opts);
+        }
+        return undefined;
+    }
+
+    private convertSVGImageToPNG(url: string, height?: number, width?: number) {
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')!
+        const ratio = window.devicePixelRatio;
+        const canvasWidth = width ?? 100;
+        const canvasHeight = height ?? 100;
+
+        canvas.width = canvasWidth * ratio
+        canvas.height = canvasHeight * ratio
+
+        canvas.style.width = `${canvasWidth}`
+        canvas.style.height = `${canvasHeight}`
+
+        const img = new Image();
+        img.src = url;
+        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        return canvas.toDataURL("image/png");
     }
 }
 

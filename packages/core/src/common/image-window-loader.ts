@@ -1,16 +1,16 @@
-import type { ImageWindowLoader, ImageWindowLoaderOptions, Item, Rectangle } from "../data-grid/data-grid-types";
+import type { ImageWindowLoader, Item, Rectangle } from "../data-grid/data-grid-types";
 import throttle from "lodash/throttle.js";
 
 interface LoadResult {
     img: HTMLImageElement | undefined;
     cancel: () => void;
-    // url: string;
+    url: string;
     cells: number[];
 }
 
 const rowShift = 1 << 16;
 
-// const imgPool: HTMLImageElement[] = [];
+const imgPool: HTMLImageElement[] = [];
 
 function packColRowToNumber(col: number, row: number) {
     return row * rowShift + col;
@@ -100,30 +100,25 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
         this.clearOutOfWindow();
     }
 
-    private loadImage(url: string, col: number, row: number, key: string, opts: ImageWindowLoaderOptions) {
-        // let loaded = false;
+    private loadImage(url: string, col: number, row: number, key: string) {
+        let loaded = false;
         const img = new Image();
 
         let canceled = false;
 
-        // if convertToPNG to png, then draw the svg to a canvas and 
-        if (opts.convertSVGToPNG === true) {
-            url = this.convertSVGImageToPNG(url, opts.svgHeight, opts.svgWidth);
-        }
-
         const result: LoadResult = {
             img: undefined,
             cells: [packColRowToNumber(col, row)],
-            // url,
+            url,
             cancel: () => {
                 if (canceled) return;
                 canceled = true;
                 img.src = "";
-                // if (imgPool.length < 24) {
-                //     imgPool.unshift(img); // never retain more than 12
-                // } else if (!loaded) {
-                //     img.src = "";
-                // }
+                if (imgPool.length < 24) {
+                    imgPool.unshift(img); // never retain more than 12
+                } else if (!loaded) {
+                    img.src = "";
+                }
             },
         };
 
@@ -160,12 +155,12 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
             }
             return current.img;
         } else {
-            this.loadImage(url, col, row, key, {});
+            this.loadImage(url, col, row, key);
         }
         return undefined;
     }
 
-    public loadOrGetSVGImage(key: string, url: string, col: number, row: number, opts: ImageWindowLoaderOptions): HTMLImageElement | ImageBitmap | undefined {
+    public loadOrGetSVGImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
         const current = this.cache[key];
         if (current !== undefined) {
             const packed = packColRowToNumber(col, row);
@@ -174,29 +169,9 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
             }
             return current.img;
         } else {
-            this.loadImage(url, col, row, key, opts);
+            this.loadImage(url, col, row, key);
         }
         return undefined;
-    }
-
-    private convertSVGImageToPNG(url: string, height?: number, width?: number) {
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')!
-        const ratio = window.devicePixelRatio;
-        const canvasWidth = width ?? 100;
-        const canvasHeight = height ?? 100;
-
-        canvas.width = canvasWidth * ratio
-        canvas.height = canvasHeight * ratio
-
-        canvas.style.width = `${canvasWidth}`
-        canvas.style.height = `${canvasHeight}`
-
-        const img = new Image();
-        img.src = url;
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        return canvas.toDataURL("image/png");
     }
 }
 

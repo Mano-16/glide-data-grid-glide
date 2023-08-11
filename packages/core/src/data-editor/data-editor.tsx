@@ -330,7 +330,7 @@ export interface DataEditorProps extends Props {
       * Enable row reorder for first column 
      * @group Style
      */
-     readonly isRowDragEnabled?: boolean;
+     readonly enableRowReordering?: boolean;
 
     /** Sets the width of the data grid.
      * @group Style
@@ -703,7 +703,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const {
         rowMarkers = "none",
         rowMarkerWidth: rowMarkerWidthRaw,
-        isRowDragEnabled,
+        enableRowReordering,
         imageEditorOverride,
         getRowThemeOverride,
         markdownDivCreateNode,
@@ -3611,7 +3611,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     drawGroup={drawGroup}
                     disabledRows={disabledRows}
                     freezeColumns={mangledFreezeColumns}
-                    lockColumns={(isRowDragEnabled ?? false) ? 1 : rowMarkerOffset }
+                    lockColumns={(enableRowReordering ?? false) ? 1 : rowMarkerOffset }
                     firstColAccessible={rowMarkerOffset === 0}
                     getCellContent={getMangledCellContent}
                     minColumnWidth={minColumnWidth}

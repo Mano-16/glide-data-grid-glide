@@ -136,7 +136,7 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
                     for (const packed of toWrite.cells) {
                         this.loadedLocations.push(unpackNumberToColRow(packed));
                     }
-                    // loaded = true;
+                    loaded = true;
                     this.sendLoaded();
                 }
             } catch {
@@ -147,20 +147,6 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
     }
 
     public loadOrGetImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
-        const current = this.cache[key];
-        if (current !== undefined) {
-            const packed = packColRowToNumber(col, row);
-            if (!current.cells.includes(packed)) {
-                current.cells.push(packed);
-            }
-            return current.img;
-        } else {
-            this.loadImage(url, col, row, key);
-        }
-        return undefined;
-    }
-
-    public loadOrGetSVGImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
         const current = this.cache[key];
         if (current !== undefined) {
             const packed = packColRowToNumber(col, row);

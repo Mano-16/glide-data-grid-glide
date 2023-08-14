@@ -2195,9 +2195,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             normalSizeColumn,
             onHeaderClicked,
             handleGroupHeaderSelection,
-            onColumnAutoSize,
             onColumnHeaderDblClick,
-            onColumnGroupHeaderDblClick
+            onColumnGroupHeaderDblClick,
         ]
     );
 

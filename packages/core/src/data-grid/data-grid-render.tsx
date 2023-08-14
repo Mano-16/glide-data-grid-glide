@@ -1592,27 +1592,27 @@ function drawBlanks(
                         return;
                     }
 
-                    const rowSelected = selectedRows.hasIndex(row);
-                    const rowDisabled = disabledRows.hasIndex(row);
+                    // const rowSelected = selectedRows.hasIndex(row);
+                    // const rowDisabled = disabledRows.hasIndex(row);
 
-                    ctx.beginPath();
+                    // ctx.beginPath();
 
-                    const rowTheme = getRowTheme?.(row);
+                    // const rowTheme = getRowTheme?.(row);
 
-                    const blankTheme = rowTheme === undefined ? theme : { ...theme, ...rowTheme };
+                    // const blankTheme = rowTheme === undefined ? theme : { ...theme, ...rowTheme };
 
-                    if (blankTheme.bgCell !== theme.bgCell) {
-                        ctx.fillStyle = blankTheme.bgCell;
-                        ctx.fillRect(drawX, drawY, 10_000, rh);
-                    }
-                    if (rowDisabled) {
-                        ctx.fillStyle = blankTheme.bgHeader;
-                        ctx.fillRect(drawX, drawY, 10_000, rh);
-                    }
-                    if (rowSelected) {
-                        ctx.fillStyle = blankTheme.accentLight;
-                        ctx.fillRect(drawX, drawY, 10_000, rh);
-                    }
+                    // if (blankTheme.bgCell !== theme.bgCell) {
+                    //     ctx.fillStyle = blankTheme.bgCell;
+                    //     ctx.fillRect(drawX, drawY, 10_000, rh);
+                    // }
+                    // if (rowDisabled) {
+                    //     ctx.fillStyle = blankTheme.bgHeader;
+                    //     ctx.fillRect(drawX, drawY, 10_000, rh);
+                    // }
+                    // if (rowSelected) {
+                    //     ctx.fillStyle = blankTheme.accentLight;
+                    //     ctx.fillRect(drawX, drawY, 10_000, rh);
+                    // }
                 }
             );
 

@@ -1367,9 +1367,10 @@ function drawCells(
                         selection.columns.some(
                             index => cell.span !== undefined && index >= cell.span[0] && index <= cell.span[1]
                         );
-                    if (isSelected && !isFocused && drawFocus) {
-                        accentCount = 0;
-                    } else if (isSelected) {
+                    // if (isSelected && !isFocused && drawFocus) {
+                    //     accentCount = 0;
+                    // } else 
+                    if (isSelected) {
                         accentCount = Math.max(accentCount, 1);
                     }
                     if (spanIsHighlighted) {

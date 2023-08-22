@@ -1,6 +1,6 @@
 {
     "name": "@lumel/glide-data-grid-cells",
-    "version": "5.4.17",
+    "version": "5.4.18",
     "description": "Extra cells for glide-data-grid",
     "sideEffects": [
         "**/*.css"
@@ -50,7 +50,7 @@
         "canvas"
     ],
     "dependencies": {
-        "@lumel/glide-data-grid": "5.4.17",
+        "@lumel/glide-data-grid": "5.4.18",
         "@toast-ui/editor": "3.1.10",
         "@toast-ui/react-editor": "3.1.10",
         "react-select": "^5.2.2"

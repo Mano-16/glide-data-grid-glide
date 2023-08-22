@@ -379,11 +379,11 @@ export function drawTextCellExternal(
     allowWrapping?: boolean,
     hyperWrapping?: boolean,
     underline?: boolean,
-) {
+): number | undefined {
     const { rect, ctx, theme } = args;
 
     ctx.fillStyle = theme.textDark;
-    drawTextCell(
+    return drawTextCell(
         {
             ctx: ctx,
             rect,
@@ -486,7 +486,7 @@ export function drawTextCell(
     allowWrapping?: boolean,
     hyperWrapping?: boolean,
     underline: boolean = false,
-) {
+): number | undefined {
     const { ctx, rect, theme } = args;
 
     const { x, y, width: w, height: h } = rect;
@@ -558,6 +558,8 @@ export function drawTextCell(
             if (mustClip) {
                 ctx.restore();
             }
+
+            return actualHeight;
         }
 
         if (changed) {
@@ -568,6 +570,7 @@ export function drawTextCell(
         if (isRtl) {
             ctx.direction = "inherit";
         }
+
     }
 }
 

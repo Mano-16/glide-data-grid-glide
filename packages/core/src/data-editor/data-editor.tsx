@@ -474,9 +474,10 @@ export interface DataEditorProps extends Props {
     /**
      * Emitted whenever the grid selection changes.
      * @param newSelection The new gridSelection as created by user input.
+     * @param event The mouse event which triggered the selection change.
      * @group Selection
      */
-    readonly onGridSelectionChange?: (newSelection: GridSelection) => void;
+    readonly onGridSelectionChange?: (newSelection: GridSelection, event?: GridMouseEventArgs | GridKeyEventArgs) => void;
     /**
      * Emitted whenever the visible cells change, usually due to scrolling.
      * @group Events
@@ -901,7 +902,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
 
     const expectedExternalGridSelection = React.useRef<GridSelection | undefined>(gridSelectionOuter);
     const setGridSelection = React.useCallback(
-        (newVal: GridSelection, expand: boolean): void => {
+        (newVal: GridSelection, expand: boolean, event?: GridMouseEventArgs | GridKeyEventArgs): void => {
             if (expand) {
                 newVal = expandSelection(
                     newVal,
@@ -913,7 +914,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             }
             if (onGridSelectionChange !== undefined) {
                 expectedExternalGridSelection.current = shiftSelection(newVal, -rowMarkerOffset);
-                onGridSelectionChange(expectedExternalGridSelection.current);
+                onGridSelectionChange(expectedExternalGridSelection.current, event);
             } else {
                 setGridSelectionInner(newVal);
             }
@@ -1663,21 +1664,21 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                         const newSlice: Slice = [Math.min(lastHighlighted, row), Math.max(lastHighlighted, row) + 1];
 
                         if (isMultiRow || rowSelectionMode === "multi") {
-                            setSelectedRows(undefined, newSlice, true);
+                            setSelectedRows(undefined, newSlice, true, args);
                         } else {
-                            setSelectedRows(CompactSelection.fromSingleSelection(newSlice), undefined, isMultiRow);
+                            setSelectedRows(CompactSelection.fromSingleSelection(newSlice), undefined, isMultiRow, args);
                         }
                     } else if (isMultiRow || args.isTouch || rowSelectionMode === "multi") {
                         if (isSelected) {
-                            setSelectedRows(selectedRows.remove(row), undefined, true);
+                            setSelectedRows(selectedRows.remove(row), undefined, true, args);
                         } else {
-                            setSelectedRows(undefined, row, true);
+                            setSelectedRows(undefined, row, true, args);
                             lastSelectedRowRef.current = row;
                         }
                     } else if (isSelected && selectedRows.length === 1) {
-                        setSelectedRows(CompactSelection.empty(), undefined, isMultiKey);
+                        setSelectedRows(CompactSelection.empty(), undefined, isMultiKey, args);
                     } else {
-                        setSelectedRows(CompactSelection.fromSingleSelection(row), undefined, isMultiKey);
+                        setSelectedRows(CompactSelection.fromSingleSelection(row), undefined, isMultiKey, args);
                         lastSelectedRowRef.current = row;
                     }
                 } else if (col >= rowMarkerOffset && showTrailingBlankRow && row === rows) {
@@ -1737,7 +1738,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                                 },
                                 true,
                                 isMultiKey,
-                                "click"
+                                "click",
+                                args
                             );
                             lastSelectedRowRef.current = undefined;
                             focus();
@@ -1749,7 +1751,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                                 },
                                 true,
                                 isMultiKey,
-                                "click"
+                                "click",
+                                args
                             );
                             lastSelectedRowRef.current = undefined;
                             setOverlay(undefined);
@@ -1765,9 +1768,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     lastSelectedColRef.current = undefined;
                     if (rowSelect === "multi") {
                         if (selectedRows.length !== rows) {
-                            setSelectedRows(CompactSelection.fromSingleSelection([0, rows]), undefined, isMultiKey);
+                            setSelectedRows(CompactSelection.fromSingleSelection([0, rows]), undefined, isMultiKey, args);
                         } else {
-                            setSelectedRows(CompactSelection.empty(), undefined, isMultiKey);
+                            setSelectedRows(CompactSelection.empty(), undefined, isMultiKey, args);
                         }
                         focus();
                     }
@@ -1782,19 +1785,19 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                         const newSlice: Slice = [Math.min(lastCol, col), Math.max(lastCol, col) + 1];
 
                         if (isMultiCol) {
-                            setSelectedColumns(undefined, newSlice, isMultiKey);
+                            setSelectedColumns(undefined, newSlice, isMultiKey, args);
                         } else {
-                            setSelectedColumns(CompactSelection.fromSingleSelection(newSlice), undefined, isMultiKey);
+                            setSelectedColumns(CompactSelection.fromSingleSelection(newSlice), undefined, isMultiKey, args);
                         }
                     } else if (isMultiCol) {
                         if (selectedColumns.hasIndex(col)) {
-                            setSelectedColumns(selectedColumns.remove(col), undefined, isMultiKey);
+                            setSelectedColumns(selectedColumns.remove(col), undefined, isMultiKey, args);
                         } else {
-                            setSelectedColumns(undefined, col, isMultiKey);
+                            setSelectedColumns(undefined, col, isMultiKey, args);
                         }
                         lastSelectedColRef.current = col;
                     } else if (columnSelect !== "none") {
-                        setSelectedColumns(CompactSelection.fromSingleSelection(col), undefined, isMultiKey);
+                        setSelectedColumns(CompactSelection.fromSingleSelection(col), undefined, isMultiKey, args);
                         lastSelectedColRef.current = col;
                     }
                     lastSelectedRowRef.current = undefined;
@@ -1803,7 +1806,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             } else if (args.kind === groupHeaderKind) {
                 lastMouseSelectLocation.current = [col, row];
             } else if (args.kind === outOfBoundsKind) {
-                setGridSelection(emptyGridSelection, false);
+                setGridSelection(emptyGridSelection, false, args);
                 setOverlay(undefined);
                 focus();
                 onSelectionCleared?.();
@@ -1918,12 +1921,12 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     for (let index = start; index <= end; index++) {
                         newVal = newVal.remove(index);
                     }
-                    setSelectedColumns(newVal, undefined, isMultiKey);
+                    setSelectedColumns(newVal, undefined, isMultiKey, args);
                 } else {
-                    setSelectedColumns(undefined, [start, end + 1], isMultiKey);
+                    setSelectedColumns(undefined, [start, end + 1], isMultiKey, args);
                 }
             } else {
-                setSelectedColumns(CompactSelection.fromSingleSelection([start, end + 1]), undefined, isMultiKey);
+                setSelectedColumns(CompactSelection.fromSingleSelection([start, end + 1]), undefined, isMultiKey, args);
             }
         },
         [columnSelect, focus, gridSelection.columns, mangledCols, rowMarkerOffset, groupHeaderLevelsIn, setSelectedColumns]
@@ -2150,8 +2153,11 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     void normalSizeColumn(col);
                 } else if (mouseDownData.current?.wasDoubleClick === true) {
                     onColumnHeaderDblClick?.(clickLocation, { ...args, preventDefault });
-                } else if (args.button === 0 && col === lastMouseDownCol && row === lastMouseDownRow) {
+                } else if (args.button === 0 ) {
                     onHeaderClicked?.(clickLocation, { ...args, preventDefault });
+                    if (!isPrevented.current) {
+                        handleSelect(args);
+                    }
                 }
             }
 
@@ -2169,8 +2175,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 }
             }
 
-            if (args.kind === "cell" && args.button === 0) {
-                handleMaybeClick(args);
+            if (args.kind === "cell" && args.button === 0 && !handleMaybeClick(args)) {
+                handleSelect(args);
             }
 
             lastMouseSelectLocation.current = undefined;
@@ -2329,7 +2335,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             ) {
                 const start = Math.min(mouseDownData.current.location[1], args.location[1]);
                 const end = Math.max(mouseDownData.current.location[1], args.location[1]) + 1;
-                setSelectedRows(CompactSelection.fromSingleSelection([start, end]), undefined, false);
+                setSelectedRows(CompactSelection.fromSingleSelection([start, end]), undefined, false, args);
             }
             if (
                 mouseState !== undefined &&
@@ -2373,7 +2379,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     },
                     true,
                     false,
-                    "drag"
+                    "drag",
+                    args
                 );
             }
 
@@ -2682,7 +2689,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     if (overlayOpen) {
                         setOverlay(undefined);
                     } else if (keybindings.clear) {
-                        setGridSelection(emptyGridSelection, false);
+                        setGridSelection(emptyGridSelection, false, event);
                         onSelectionCleared?.();
                     }
                     return;
@@ -2703,7 +2710,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                                     rangeStack: [],
                                 },
                             },
-                            false
+                            false,
+                            event
                         );
                     } else {
                         const el = document.getElementById(overlayID);
@@ -2798,22 +2806,22 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
 
                 if (keybindings.selectColumn && isHotkey("ctrl+ ", event) && columnSelect !== "none") {
                     if (selectedColumns.hasIndex(col)) {
-                        setSelectedColumns(selectedColumns.remove(col), undefined, true);
+                        setSelectedColumns(selectedColumns.remove(col), undefined, true, event);
                     } else {
                         if (columnSelect === "single") {
-                            setSelectedColumns(CompactSelection.fromSingleSelection(col), undefined, true);
+                            setSelectedColumns(CompactSelection.fromSingleSelection(col), undefined, true, event);
                         } else {
-                            setSelectedColumns(undefined, col, true);
+                            setSelectedColumns(undefined, col, true, event);
                         }
                     }
                 } else if (keybindings.selectRow && isHotkey("shift+ ", event) && rowSelect !== "none") {
                     if (selectedRows.hasIndex(row)) {
-                        setSelectedRows(selectedRows.remove(row), undefined, true);
+                        setSelectedRows(selectedRows.remove(row), undefined, true, event);
                     } else {
                         if (rowSelect === "single") {
-                            setSelectedRows(CompactSelection.fromSingleSelection(row), undefined, true);
+                            setSelectedRows(CompactSelection.fromSingleSelection(row), undefined, true, event);
                         } else {
-                            setSelectedRows(undefined, row, true);
+                            setSelectedRows(undefined, row, true, event);
                         }
                     }
                 } else if (

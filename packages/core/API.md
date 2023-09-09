@@ -754,7 +754,7 @@ Controls the drawing of the left hand vertical border of a column. If set to a b
 
 ```ts
 gridSelection?: GridSelection;
-onGridSelectionChange?: (newSelection: GridSelection | undefined) => void;
+onGridSelectionChange?: (newSelection: GridSelection | undefined, event?: GridMouseEventArgs) => void;
 ```
 
 The currently selected `cell` and `range` in the data grid. If provided the `onGridSelectionChange` event should also be used as this property is controlled via that event. If this property is not provided, nor should the `onGridSelectionChange` event be.

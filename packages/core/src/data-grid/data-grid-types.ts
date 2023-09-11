@@ -84,6 +84,7 @@ export interface BaseGridMouseEventArgs {
     readonly shiftKey: boolean;
     readonly ctrlKey: boolean;
     readonly metaKey: boolean;
+    readonly altKey: boolean;
     readonly isTouch: boolean;
     readonly isLongTouch?: boolean;
     readonly isEdge: boolean;

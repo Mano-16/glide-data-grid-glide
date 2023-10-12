@@ -707,7 +707,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const {
         rowMarkers = "none",
         rowMarkerWidth: rowMarkerWidthRaw,
-        enableRowReordering,
+        // enableRowReordering,
         imageEditorOverride,
         getRowThemeOverride,
         markdownDivCreateNode,
@@ -3623,7 +3623,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     drawGroup={drawGroup}
                     disabledRows={disabledRows}
                     freezeColumns={mangledFreezeColumns}
-                    lockColumns={(enableRowReordering ?? false) ? 1 : rowMarkerOffset }
+                    lockColumns={rowMarkerOffset}
                     firstColAccessible={rowMarkerOffset === 0}
                     getCellContent={getMangledCellContent}
                     minColumnWidth={minColumnWidth}

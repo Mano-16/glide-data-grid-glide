@@ -178,6 +178,7 @@ export const CustomCells: React.VFC = () => {
                 onPaste={true}
                 // eslint-disable-next-line no-console
                 onCellEdited={(...args) => console.log("Edit Cell", ...args)}
+                getCellsForSelection={true}
                 getCellContent={cell => {
                     const [col, row] = cell;
                     if (col === 0) {
@@ -323,11 +324,41 @@ export const CustomCells: React.VFC = () => {
                                 kind: "date-picker-cell",
                                 date: new Date(),
                                 displayDate: new Date().toISOString(),
-                                format: "date",
+                                format: "datetime-local",
                             },
                         };
                         return d;
                     } else if (col === 10) {
+                        num = row + 1;
+                        rand();
+                        const d: DatePickerCell = {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: "4",
+                            data: {
+                                kind: "date-picker-cell",
+                                date: new Date(),
+                                displayDate: new Date().toISOString().split("T")[0],
+                                format: "date",
+                            },
+                        };
+                        return d;
+                    } else if (col === 11) {
+                        num = row + 1;
+                        rand();
+                        const d: DatePickerCell = {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: "4",
+                            data: {
+                                kind: "date-picker-cell",
+                                date: new Date(),
+                                displayDate: new Date().toISOString().split("T")[1].replace("Z", ""),
+                                format: "time",
+                            },
+                        };
+                        return d;
+                    } else if (col === 12) {
                         num = row + 1;
                         rand();
                         const d: LinksCell = {
@@ -350,7 +381,7 @@ export const CustomCells: React.VFC = () => {
                             },
                         };
                         return d;
-                    } else if (col === 11) {
+                    } else if (col === 13) {
                         num = row + 1;
                         rand();
                         const d: ButtonCell = {
@@ -398,8 +429,8 @@ export const CustomCells: React.VFC = () => {
                         width: 150,
                     },
                     {
+                        id: "dropdown",
                         title: "Dropdown",
-                        width: 150,
                     },
                     {
                         title: "Range",
@@ -414,8 +445,16 @@ export const CustomCells: React.VFC = () => {
                         width: 150,
                     },
                     {
+                        id: "datetime-picker",
+                        title: "Datetime Picker",
+                    },
+                    {
+                        id: "date-picker",
                         title: "Date Picker",
-                        width: 150,
+                    },
+                    {
+                        id: "time-picker",
+                        title: "Time Picker",
                     },
                     {
                         title: "Links",
@@ -457,7 +496,7 @@ export const CustomCellEditing: React.VFC = () => {
                 onCellEdited={(cell, newVal) => {
                     if (newVal.kind !== GridCellKind.Custom) return;
                     if (DropdownRenderer.isMatch(newVal)) {
-                        data.current[cell[1]] = newVal.data.value;
+                        data.current[cell[1]] = newVal.data.value ?? "";
                     }
                 }}
                 getCellsForSelection={true}

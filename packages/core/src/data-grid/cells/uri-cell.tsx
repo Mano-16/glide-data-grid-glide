@@ -13,7 +13,7 @@ export const uriCellRenderer: InternalCellRenderer<UriCell> = {
     useLabel: true,
     drawPrep: prepTextCell,
     draw: a => drawTextCell(a, a.cell.data, a.cell.contentAlign),
-    measure: (ctx, cell) => ctx.measureText(cell.data).width + 16,
+    measure: (ctx, cell, theme) => ctx.measureText(cell.data).width + theme.cellHorizontalPadding * 2,
     onDelete: c => ({
         ...c,
         data: "",
@@ -24,6 +24,7 @@ export const uriCellRenderer: InternalCellRenderer<UriCell> = {
             <UriOverlayEditor
                 forceEditMode={forceEditMode}
                 uri={value.data}
+                preview={value.displayData ?? value.data}
                 validatedSelection={validatedSelection}
                 readonly={value.readonly === true}
                 onChange={e =>

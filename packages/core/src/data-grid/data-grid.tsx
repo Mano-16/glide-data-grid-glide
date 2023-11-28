@@ -292,6 +292,8 @@ export interface DataGridProps {
     readonly theme: Theme;
 
     readonly getCellRenderer: <T extends InnerGridCell>(cell: T) => CellRenderer<T> | undefined;
+
+    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D) => void) | undefined;
 }
 
 type DamageUpdateList = readonly {
@@ -377,6 +379,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         smoothScrollY = false,
         experimental,
         getCellRenderer,
+        onGridDrawn,
     } = p;
     const translateX = p.translateX ?? 0;
     const translateY = p.translateY ?? 0;
@@ -742,6 +745,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             enqueue: enqueueRef.current,
             renderStrategy: experimental?.renderStrategy ?? (browserIsSafari.value ? "double-buffer" : "single-buffer"),
             getCellRenderer,
+            onGridDrawn
         };
 
         // This confusing bit of code due to some poor design. Long story short, the damage property is only used
@@ -799,6 +803,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         lastWasTouch,
         getCellRenderer,
         groupHeaderLevels,
+        onGridDrawn,
     ]);
 
     const lastDrawRef = React.useRef(draw);

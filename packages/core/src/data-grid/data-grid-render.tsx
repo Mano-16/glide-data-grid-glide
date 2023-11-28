@@ -2067,6 +2067,7 @@ export interface DrawGridArg {
     readonly renderStrategy: "single-buffer" | "double-buffer" | "direct";
     readonly enqueue: (item: Item) => void;
     readonly getCellRenderer: GetCellRendererCallback;
+    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D) => void) | undefined;
 }
 
 export interface WalkGridArg {
@@ -2231,6 +2232,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         renderStrategy,
         bufferA,
         bufferB,
+        onGridDrawn,
     } = arg;
     let { damage } = arg;
     if (width === 0 || height === 0) return;
@@ -2517,6 +2519,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             );
             drawHeaderTexture();
         }
+        onGridDrawn?.(targetCtx);
         targetCtx.restore();
         overlayCtx.restore();
 

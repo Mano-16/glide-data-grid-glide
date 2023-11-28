@@ -836,6 +836,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         onColumnHeaderDblClick,
         onColumnGroupHeaderDblClick,
         isOutsideClick,
+        onGridDrawn
     } = p;
 
     const minColumnWidth = Math.max(minColumnWidthIn, 20);
@@ -3748,6 +3749,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     getCellRenderer={getCellRenderer}
                     scrollToEnd={scrollToEnd}
                     scrollableHeight={scrollableHeight}
+                    onGridDrawn={onGridDrawn}
                 />
                 {renameGroupNode}
                 {overlay !== undefined && (

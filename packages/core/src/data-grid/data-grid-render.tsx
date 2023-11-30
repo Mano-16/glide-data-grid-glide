@@ -2761,6 +2761,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         lastBuffer: doubleBuffer ? (targetBuffer === bufferA ? "a" : "b") : undefined,
     };
 
+    onGridDrawn?.(targetCtx);
+
     targetCtx.restore();
     overlayCtx.restore();
 }

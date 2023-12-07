@@ -104,6 +104,7 @@ const basicProps: DataGridProps = {
         if (cell.kind === GridCellKind.Custom) return undefined;
         return CellRenderers[cell.kind] as any;
     },
+    onGridDrawn: () => undefined,
 };
 
 beforeEach(() => {

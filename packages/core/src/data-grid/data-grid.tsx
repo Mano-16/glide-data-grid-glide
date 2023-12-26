@@ -680,6 +680,15 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         return [a, b];
     }, []);
 
+        
+    const getBounds = React.useCallback((col: number, row?: number) => {
+        if (canvasRef === undefined || canvasRef.current === null) {
+            return undefined;
+        }
+
+        return getBoundsForItem(canvasRef.current, col, row ?? -1);
+    }, [getBoundsForItem, canvasRef]);
+
     React.useLayoutEffect(() => {
         document.documentElement.append(bufferA);
         document.documentElement.append(bufferB);
@@ -745,7 +754,8 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             enqueue: enqueueRef.current,
             renderStrategy: experimental?.renderStrategy ?? (browserIsSafari.value ? "double-buffer" : "single-buffer"),
             getCellRenderer,
-            onGridDrawn
+            onGridDrawn,
+            getBounds,
         };
 
         // This confusing bit of code due to some poor design. Long story short, the damage property is only used
@@ -804,6 +814,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         getCellRenderer,
         groupHeaderLevels,
         onGridDrawn,
+        getBounds,
     ]);
 
     const lastDrawRef = React.useRef(draw);
@@ -1566,17 +1577,11 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                     });
                 }
             },
-            getBounds: (col: number, row?: number) => {
-                if (canvasRef === undefined || canvasRef.current === null) {
-                    return undefined;
-                }
-
-                return getBoundsForItem(canvasRef.current, col, row ?? -1);
-            },
+            getBounds,
             damage,
             getVisibleCells,
         }),
-        [canvasRef, damage, getBoundsForItem, getVisibleCells]
+        [canvasRef, damage, getVisibleCells, getBounds]
     );
 
     const lastFocusedSubdomNode = React.useRef<Item>();

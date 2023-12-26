@@ -2067,7 +2067,8 @@ export interface DrawGridArg {
     readonly renderStrategy: "single-buffer" | "double-buffer" | "direct";
     readonly enqueue: (item: Item) => void;
     readonly getCellRenderer: GetCellRendererCallback;
-    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D) => void) | undefined;
+    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D, getBounds: (col: number, row?: number) => Rectangle | undefined) => void) | undefined;
+    readonly getBounds: (col: number, row?: number) => Rectangle | undefined
 }
 
 export interface WalkGridArg {
@@ -2233,6 +2234,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         bufferA,
         bufferB,
         onGridDrawn,
+        getBounds,
     } = arg;
     let { damage } = arg;
     if (width === 0 || height === 0) return;
@@ -2519,7 +2521,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             );
             drawHeaderTexture();
         }
-        onGridDrawn?.(targetCtx);
+        onGridDrawn?.(targetCtx, getBounds);
         targetCtx.restore();
         overlayCtx.restore();
 
@@ -2761,7 +2763,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         lastBuffer: doubleBuffer ? (targetBuffer === bufferA ? "a" : "b") : undefined,
     };
 
-    onGridDrawn?.(targetCtx);
+    onGridDrawn?.(targetCtx, getBounds);
 
     targetCtx.restore();
     overlayCtx.restore();

@@ -293,7 +293,7 @@ export interface DataGridProps {
 
     readonly getCellRenderer: <T extends InnerGridCell>(cell: T) => CellRenderer<T> | undefined;
 
-    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D) => void) | undefined;
+    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D, getBounds: (col: number, row?: number) => Rectangle | undefined) => void) | undefined;
 }
 
 type DamageUpdateList = readonly {

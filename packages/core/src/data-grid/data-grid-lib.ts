@@ -387,7 +387,7 @@ export function drawTextCellExternal(
     contentAlign?: BaseGridCell["contentAlign"],
     allowWrapping?: boolean,
     hyperWrapping?: boolean,
-    underline?: boolean,
+    underline?: boolean | { enabled: boolean, color?: string },
 ): number | undefined {
     const { rect, ctx, theme } = args;
 
@@ -416,7 +416,7 @@ function drawSingleTextLine(
     bias: number,
     theme: Theme,
     contentAlign?: BaseGridCell["contentAlign"],
-    underline: boolean = false,
+    underline?: { enabled: boolean, color?: string },
 ) {
     let textX = x;
     let textY = y;
@@ -433,7 +433,7 @@ function drawSingleTextLine(
         textY = y + h / 2 + bias;
         ctx.fillText(data, textX, textY);
     }
-    if (underline) drawUnderline(ctx, data, theme, textX, textY, contentAlign);
+    if (underline && underline.enabled) drawUnderline(ctx, data, theme, textX, textY, contentAlign, underline?.color);
 }
 
 function drawUnderline(
@@ -442,7 +442,8 @@ function drawUnderline(
     theme: Theme,
     x: number,
     y: number,
-    contentAlign?: BaseGridCell["contentAlign"]
+    contentAlign?: BaseGridCell["contentAlign"],
+    underlineColor?: string
 ) {
     const font = `${theme.baseFontStyle} ${theme.fontFamily}`;
     const textWidth = measureTextCached(data, ctx, font)?.width;
@@ -477,7 +478,7 @@ function drawUnderline(
     ctx.lineWidth = underlineHeight;
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
-    ctx.strokeStyle = theme.textDark;
+    ctx.strokeStyle = underlineColor ?? theme.textDark;
     ctx.stroke();
     ctx.restore();
 }
@@ -494,8 +495,13 @@ export function drawTextCell(
     contentAlign?: BaseGridCell["contentAlign"],
     allowWrapping?: boolean,
     hyperWrapping?: boolean,
-    underline: boolean = false,
+    underline?: boolean | { enabled: boolean, color?: string },
 ): number | undefined {
+    if (typeof underline === 'boolean') {
+        underline = {
+            enabled: underline,
+        }
+    }
     const { ctx, rect, theme } = args;
 
     const { x, y, width: w, height: h } = rect;

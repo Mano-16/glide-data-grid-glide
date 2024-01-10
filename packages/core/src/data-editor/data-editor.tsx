@@ -2202,9 +2202,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     onColumnHeaderDblClick?.(clickLocation, { ...args, preventDefault });
                 } else if (args.button === 0 ) {
                     onHeaderClicked?.(clickLocation, { ...args, preventDefault });
-                    if (!isPrevented.current) {
-                        handleSelect(args);
-                    }
+                    // if (!isPrevented.current) {
+                    //     handleSelect(args);
+                    // }
                 }
             }
 
@@ -2222,8 +2222,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 }
             }
 
-            if (args.kind === "cell" && (args.button === 0 || args.button === 1) && !handleMaybeClick(args)) {
-                handleSelect(args);
+            if (args.kind === "cell" && (args.button === 0 || args.button === 1)) {
+                handleMaybeClick(args);
             }
 
             lastMouseSelectLocation.current = undefined;

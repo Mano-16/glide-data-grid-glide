@@ -60,7 +60,7 @@ export interface GroupHeaderClickedEventArgs extends GridMouseGroupHeaderEventAr
 /** @category Types */
 export interface ImageWindowLoader {
     setWindow(newWindow: Rectangle, freezeCols: number): void;
-    loadOrGetImage(url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined;
+    loadOrGetImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined;
     setCallback(imageLoaded: (locations: readonly Item[]) => void): void;
 }
 
@@ -84,6 +84,7 @@ export interface BaseGridMouseEventArgs {
     readonly shiftKey: boolean;
     readonly ctrlKey: boolean;
     readonly metaKey: boolean;
+    readonly altKey: boolean;
     readonly isTouch: boolean;
     readonly isLongTouch?: boolean;
     readonly isEdge: boolean;
@@ -141,6 +142,7 @@ export interface GridKeyEventArgs {
     readonly stopPropagation: () => void;
     readonly preventDefault: () => void;
     readonly rawEvent: React.KeyboardEvent<HTMLElement> | undefined;
+    readonly location: Item | undefined;
 }
 
 interface DragHandler {
@@ -195,6 +197,7 @@ export type DrawGroupCallback = (args: {
     level: number;
     span: Item;
     name: string;
+    displayName?: string;
     icon?: string; 
     isHovered: boolean;
     spriteManager: SpriteManager;
@@ -251,7 +254,17 @@ export enum GridColumnIcon {
 /** @category Types */
 export type CellArray = readonly (readonly GridCell[])[];
 
-/** @category Types */
+/**
+ * This type is used to specify the coordinates of
+ * a cell or header within the dataset: positive row
+ * numbers identify cells.
+ *
+ * - `-1`: Header
+ * - `-2`: Group header
+ * - `0 and higher`: Row index
+ *
+ * @category Types
+ */
 export type Item = readonly [col: number, row: number];
 
 /** @category Types */
@@ -378,7 +391,7 @@ export function isReadWriteCell(cell: GridCell): cell is ReadWriteGridCell {
     ) {
         return cell.readonly !== true;
     }
-    assertNever(cell);
+    assertNever(cell, "A cell was passed with an invalid kind");
 }
 
 /** @category Cells */
@@ -415,6 +428,7 @@ export interface BaseGridCell {
     readonly span?: readonly [start: number, end: number];
     readonly contentAlign?: "left" | "right" | "center";
     readonly cursor?: CSSProperties["cursor"];
+    readonly copyData?: string;
 }
 
 /** @category Cells */
@@ -434,6 +448,7 @@ export interface TextCell extends BaseGridCell {
     readonly data: string;
     readonly readonly?: boolean;
     readonly allowWrapping?: boolean;
+    readonly underline?: boolean | { enabled: boolean, color?: string };
 }
 
 /** @category Cells */
@@ -442,6 +457,11 @@ export interface NumberCell extends BaseGridCell {
     readonly displayData: string;
     readonly data: number | undefined;
     readonly readonly?: boolean;
+    readonly underline?: boolean | { enabled: boolean, color?: string };
+    readonly fixedDecimals?: number;
+    readonly allowNegative?: boolean;
+    readonly thousandSeparator?: boolean | string;
+    readonly decimalSeparator?: string;
 }
 
 /** @category Cells */
@@ -465,7 +485,7 @@ export type SelectionRange = number | readonly [number, number];
 /** @category Renderers */
 export type ProvideEditorComponent<T extends InnerGridCell> = React.FunctionComponent<{
     readonly onChange: (newValue: T) => void;
-    readonly onFinishedEditing: (newValue?: T) => void;
+    readonly onFinishedEditing: (newValue?: T, movement?: readonly [-1 | 0 | 1, -1 | 0 | 1]) => void;
     readonly isHighlighted: boolean;
     readonly value: T;
     readonly initialValue?: string;
@@ -535,6 +555,7 @@ export interface BooleanCell extends BaseGridCell {
     readonly data: boolean | BooleanEmpty | BooleanIndeterminate;
     readonly readonly?: boolean;
     readonly allowOverlay: false;
+    readonly maxSize?: number;
 }
 
 // Can be written more concisely, not easier to read if more concise.
@@ -561,6 +582,7 @@ export interface MarkdownCell extends BaseGridCell {
 export interface UriCell extends BaseGridCell {
     readonly kind: GridCellKind.Uri;
     readonly data: string;
+    readonly displayData?: string;
     readonly readonly?: boolean;
 }
 
@@ -585,7 +607,7 @@ export interface MarkerCell extends BaseGridCell {
     readonly row: number;
     readonly drawHandle: boolean;
     readonly checked: boolean;
-    readonly markerKind: "checkbox" | "number" | "both";
+    readonly markerKind: "checkbox" | "number" | "both" | "checkbox-visible";
 }
 
 /** @category Selection */
@@ -748,4 +770,14 @@ export class CompactSelection {
             }
         }
     }
+}
+
+/** Visible Cell Meta */
+export interface VisibleCellMeta {
+    row: number,
+    col: number,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
 }

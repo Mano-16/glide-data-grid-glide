@@ -33,10 +33,12 @@ export function makeCSSStyle(theme: Theme): Record<string, string> {
         "--gdg-cell-vertical-padding": `${theme.cellVerticalPadding}px`,
         "--gdg-header-font-style": theme.headerFontStyle,
         "--gdg-base-font-style": theme.baseFontStyle,
+        "--gdg-marker-font-style": theme.markerFontStyle,
         "--gdg-font-family": theme.fontFamily,
         "--gdg-editor-font-size": theme.editorFontSize,
     };
 }
+
 
 /** @category Theme */
 export interface Theme {
@@ -70,10 +72,18 @@ export interface Theme {
     headerFontStyle: string;
     headerIconSize: number;
     baseFontStyle: string;
+    markerFontStyle: string;
     fontFamily: string;
     editorFontSize: string;
     lineHeight: number;
     textDecoration : string | number
+    padding: {
+        
+            top: number;
+            bottom: number;
+            left: number;
+            right: number;
+    }
 }
 
 const dataEditorBaseTheme: Theme = {
@@ -115,11 +125,19 @@ const dataEditorBaseTheme: Theme = {
 
     headerFontStyle: "600 13px",
     baseFontStyle: "13px",
+    markerFontStyle: "9px",
     fontFamily:
         "Inter, Roboto, -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, noto, arial, sans-serif",
     editorFontSize: "13px",
     lineHeight: 1.4, //unitless scaler depends on your font
-    textDecoration : "initial"
+    textDecoration : "initial",
+    padding: {
+        
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+    }
 };
 
 /** @category Theme */

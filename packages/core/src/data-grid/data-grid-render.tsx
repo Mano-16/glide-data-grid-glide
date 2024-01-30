@@ -20,6 +20,7 @@ import {
     ImageWindowLoader,
     GridCell,
     DrawGroupCallback,
+    VisibleCellMeta,
 } from "./data-grid-types";
 import groupBy from "lodash/groupBy.js";
 import type { HoverValues } from "./animation-manager";
@@ -41,7 +42,7 @@ import type { Theme } from "../common/styles";
 import { blend, withAlpha } from "./color-parser";
 import type { DrawArgs, GetCellRendererCallback, PrepResult } from "./cells/cell-types";
 import { assert, deepEqual } from "../common/support";
-import { convertToStringArray, getGroupLevelIndexFromRow } from "../common/utils";
+import { convertToStringArray, getGroupLevelIndexFromRow, direction } from "../common/utils";
 
 // Future optimization opportunities
 // - Create a cache of a buffer used to render the full view of a partially displayed column so that when
@@ -64,6 +65,7 @@ export interface Highlight {
 
 interface GroupDetails {
     readonly name: string;
+    readonly title?: string;
     readonly icon?: string;
     readonly overrideTheme?: Partial<Theme>;
     readonly actions?: readonly {
@@ -539,7 +541,7 @@ function drawGroups(
             const toRender = damage.some(d => {
                 if (getGroupLevelIndexFromRow(d[1], groupHeaderLevels) === level && d[0] >= span[0] && d[0] <= span[1]) return true;
             });
-            if (!toRender) return; 
+            if (!toRender) return;
         }
 
         ctx.save();
@@ -609,6 +611,7 @@ function drawGroups(
                 h,
                 level,
                 span,
+                groupName,
                 group,
                 eachGroupHeaderHeight,
                 theme,
@@ -657,7 +660,8 @@ function drawGroups(
 }
 
 const menuButtonSize = 30;
-export function getHeaderMenuBounds(x: number, y: number, width: number, height: number): Rectangle {
+export function getHeaderMenuBounds(x: number, y: number, width: number, height: number, isRtl: boolean): Rectangle {
+    if (isRtl) return { x, y, width: menuButtonSize, height: Math.min(menuButtonSize, height) };
     return {
         x: x + width - menuButtonSize, // right align
         y: Math.max(y, y + height / 2 - menuButtonSize / 2), // center vertically
@@ -674,6 +678,7 @@ export function drawGroup (
     height: number,
     level: number,
     span: Item,
+    groupName: string,
     group: GroupDetails,
     groupHeight: number,
     theme: Theme,
@@ -689,8 +694,9 @@ export function drawGroup (
         rect: { x, y, width, height },
         level,
         span,
-        name: group.name,
-        icon: group.icon,
+        name: groupName,
+        displayName: group?.name,
+        icon: group?.icon,
         isHovered,
         spriteManager
     })) {
@@ -716,7 +722,7 @@ export function drawGroup (
     }
 
     ctx.fillText(
-        group.name,
+        group?.name || groupName || "",
         drawX + xPad,
         y + groupHeight / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
     );
@@ -739,7 +745,9 @@ export function drawHeader(
     touchMode: boolean
 ) {
     const isCheckboxHeader = c.title.startsWith(headerCellCheckboxPrefix);
-    const menuBounds = getHeaderMenuBounds(x, y, width, height);
+    const isRtl = direction(c.title) === "rtl";
+    const menuBounds = getHeaderMenuBounds(x, y, width, height, isRtl);
+
     if (drawHeaderCallback !== undefined) {
         let passCol = c;
         if (isCheckboxHeader) {
@@ -774,7 +782,7 @@ export function drawHeader(
         if (checked !== true) {
             ctx.globalAlpha = hoverAmount;
         }
-        drawCheckbox(ctx, theme, checked, x, y, width, height, false, undefined, undefined);
+        drawCheckbox(ctx, theme, checked, x, y, width, height, false, undefined, undefined, 18);
         if (checked !== true) {
             ctx.globalAlpha = 1;
         }
@@ -786,34 +794,44 @@ export function drawHeader(
 
     const shouldDrawMenu = c.hasMenu === true && (isHovered || (touchMode && selected));
 
-    let drawX = x + xPad;
+    const dirScalar = isRtl ? -1 : 1;
+
+    let drawX = isRtl ? x + width - xPad : x + xPad;
     if (c.icon !== undefined) {
         let variant: SpriteVariant = selected ? "selected" : "normal";
         if (c.style === "highlight") {
             variant = selected ? "selected" : "special";
         }
         const headerSize = theme.headerIconSize;
-        spriteManager.drawSprite(c.icon, variant, ctx, drawX, y + (height - headerSize) / 2, headerSize, theme);
+        spriteManager.drawSprite(
+            c.icon,
+            variant,
+            ctx,
+            isRtl ? drawX - headerSize : drawX,
+            y + (height - headerSize) / 2,
+            headerSize,
+            theme
+        );
 
         if (c.overlayIcon !== undefined) {
             spriteManager.drawSprite(
                 c.overlayIcon,
                 selected ? "selected" : "special",
                 ctx,
-                drawX + 9,
+                isRtl ? drawX - headerSize + 9 : drawX + 9,
                 y + ((height - 18) / 2 + 6),
                 18,
                 theme
             );
         }
 
-        drawX += Math.ceil(headerSize * 1.3);
+        drawX += Math.ceil(headerSize * 1.3) * dirScalar;
     }
 
     if (shouldDrawMenu && c.hasMenu === true && width > 35) {
         const fadeWidth = 35;
-        const fadeStart = width - fadeWidth;
-        const fadeEnd = width - fadeWidth * 0.7;
+        const fadeStart = isRtl ? fadeWidth : width - fadeWidth;
+        const fadeEnd = isRtl ? fadeWidth * 0.7 : width - fadeWidth * 0.7;
 
         const fadeStartPercent = fadeStart / width;
         const fadeEndPercent = fadeEnd / width;
@@ -821,20 +839,26 @@ export function drawHeader(
         const grad = ctx.createLinearGradient(x, 0, x + width, 0);
         const trans = withAlpha(fillStyle, 0);
 
-        grad.addColorStop(0, fillStyle);
+        grad.addColorStop(isRtl ? 1 : 0, fillStyle);
         grad.addColorStop(fadeStartPercent, fillStyle);
         grad.addColorStop(fadeEndPercent, trans);
-        grad.addColorStop(1, trans);
+        grad.addColorStop(isRtl ? 0 : 1, trans);
         ctx.fillStyle = grad;
     } else {
         ctx.fillStyle = fillStyle;
     }
 
+    if (isRtl) {
+        ctx.textAlign = "right";
+    }
     ctx.fillText(
         c.title,
         drawX,
         y + height / 2 + getMiddleCenterBias(ctx, `${theme.headerFontStyle} ${theme.fontFamily}`)
     );
+    if (isRtl) {
+        ctx.textAlign = "left";
+    }
 
     if (shouldDrawMenu && c.hasMenu === true) {
         ctx.beginPath();
@@ -1027,7 +1051,9 @@ function clipDamage(
 
     ctx.beginPath();
 
-    walkGroups(effectiveColumns, width, translateX, groupHeaderLevels, groupHeaderHeight, (span, _group, x, y, w, h) => {
+    const eachGroupHeaderHeight = groupHeaderHeight / groupHeaderLevels;
+
+    walkGroups(effectiveColumns, width, translateX, groupHeaderLevels, eachGroupHeaderHeight, (span, _group, x, y, w, h) => {
         for (let i = 0; i < damage.length; i++) {
             const d = damage[i];
             if (d[1] <= -2 && d[0] >= span[0] && d[0] <= span[1]) {
@@ -1361,8 +1387,9 @@ function drawCells(
                             index => cell.span !== undefined && index >= cell.span[0] && index <= cell.span[1]
                         );
                     if (isSelected && !isFocused && drawFocus) {
-                        accentCount = 0;
-                    } else if (isSelected) {
+                        // accentCount = 0;
+                    } 
+                    if (isSelected) {
                         accentCount = Math.max(accentCount, 1);
                     }
                     if (spanIsHighlighted) {
@@ -1473,6 +1500,59 @@ function drawCells(
     return result;
 }
 
+function walkAllVisibleCells(
+    effectiveColumns: readonly MappedGridColumn[],
+    height: number,
+    totalHeaderHeight: number,
+    translateX: number,
+    translateY: number,
+    cellYOffset: number,
+    rows: number,
+    getRowHeight: (row: number) => number,
+    trailingRowType: TrailingRowType,
+): VisibleCellMeta[] | undefined {
+    const resultCells: VisibleCellMeta[] = [];
+    let toDraw =  Number.MAX_SAFE_INTEGER;
+    walkColumns(
+        effectiveColumns,
+        cellYOffset,
+        translateX,
+        translateY,
+        totalHeaderHeight,
+        (c, drawX, colDrawStartY, _, startRow) => {
+
+            walkRowsInCol(
+                startRow,
+                colDrawStartY,
+                height,
+                rows,
+                getRowHeight,
+                trailingRowType,
+                (drawY, row, rh) => {
+                    if (row < 0) return;
+                    const cellX = drawX;
+                    const cellWidth = c.width;
+                    // const cellKey = `${row}:${c.sourceIndex}`;
+
+                    resultCells.push({
+                        row: row,
+                        col: c.sourceIndex,
+                        x: cellX,
+                        y: drawY,
+                        w: cellWidth,
+                        h: rh,
+                    });
+                    toDraw--;
+                    return toDraw <= 0;
+                }
+            );
+
+            return toDraw <= 0;
+        }
+    );
+    return resultCells;
+}
+
 function drawBlanks(
     ctx: CanvasRenderingContext2D,
     effectiveColumns: readonly MappedGridColumn[],
@@ -1532,26 +1612,29 @@ function drawBlanks(
                         return;
                     }
 
-                    const rowSelected = selectedRows.hasIndex(row);
-                    const rowDisabled = disabledRows.hasIndex(row);
-
-                    ctx.beginPath();
-
-                    const rowTheme = getRowTheme?.(row);
-
-                    const blankTheme = rowTheme === undefined ? theme : { ...theme, ...rowTheme };
-
-                    if (blankTheme.bgCell !== theme.bgCell) {
-                        ctx.fillStyle = blankTheme.bgCell;
-                        ctx.fillRect(drawX, drawY, 10_000, rh);
-                    }
-                    if (rowDisabled) {
-                        ctx.fillStyle = blankTheme.bgHeader;
-                        ctx.fillRect(drawX, drawY, 10_000, rh);
-                    }
-                    if (rowSelected) {
-                        ctx.fillStyle = blankTheme.accentLight;
-                        ctx.fillRect(drawX, drawY, 10_000, rh);
+                    const enableBlankCellTheming = false;
+                    if (enableBlankCellTheming) {
+                        const rowSelected = selectedRows.hasIndex(row);
+                        const rowDisabled = disabledRows.hasIndex(row);
+    
+                        ctx.beginPath();
+    
+                        const rowTheme = getRowTheme?.(row);
+    
+                        const blankTheme = rowTheme === undefined ? theme : { ...theme, ...rowTheme };
+    
+                        if (blankTheme.bgCell !== theme.bgCell) {
+                            ctx.fillStyle = blankTheme.bgCell;
+                            ctx.fillRect(drawX, drawY, 10_000, rh);
+                        }
+                        if (rowDisabled) {
+                            ctx.fillStyle = blankTheme.bgHeader;
+                            ctx.fillRect(drawX, drawY, 10_000, rh);
+                        }
+                        if (rowSelected) {
+                            ctx.fillStyle = blankTheme.accentLight;
+                            ctx.fillRect(drawX, drawY, 10_000, rh);
+                        }
                     }
                 }
             );
@@ -1812,6 +1895,11 @@ function drawFocusRing(
         return undefined;
     const [targetCol, targetRow] = selectedCell.current.cell;
     const cell = getCellContent(selectedCell.current.cell);
+
+    if (cell === null || cell === undefined) {
+        return undefined;
+    }
+
     const targetColSpan = cell.span ?? [targetCol, targetCol];
 
     const isStickyRow = trailingRowType === "sticky" && targetRow === rows - 1;
@@ -1979,6 +2067,25 @@ export interface DrawGridArg {
     readonly renderStrategy: "single-buffer" | "double-buffer" | "direct";
     readonly enqueue: (item: Item) => void;
     readonly getCellRenderer: GetCellRendererCallback;
+    readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D, getBounds: (col: number, row?: number) => Rectangle | undefined) => void) | undefined;
+    readonly getBounds: (col: number, row?: number) => Rectangle | undefined
+}
+
+export interface WalkGridArg {
+    readonly width: number;
+    readonly height: number;
+    readonly cellXOffset: number;
+    readonly cellYOffset: number;
+    readonly translateX: number;
+    readonly translateY: number;
+    readonly mappedColumns: readonly MappedGridColumn[];
+    readonly enableGroups: boolean;
+    readonly dragAndDropState: DragAndDropState | undefined;
+    readonly headerHeight: number;
+    readonly groupHeaderHeight: number;
+    readonly rowHeight: number | ((index: number) => number);
+    readonly lastRowSticky: TrailingRowType;
+    readonly rows: number;
 }
 
 function computeCanBlit(current: DrawGridArg, last: DrawGridArg | undefined): boolean | number {
@@ -2040,6 +2147,43 @@ function computeCanBlit(current: DrawGridArg, last: DrawGridArg | undefined): bo
     return true;
 }
 
+export function walkGrid(arg: WalkGridArg): VisibleCellMeta[] | undefined {
+    const {
+        width,
+        height,
+        cellXOffset,
+        cellYOffset,
+        translateX,
+        translateY,
+        mappedColumns,
+        enableGroups,
+        dragAndDropState,
+        headerHeight,
+        groupHeaderHeight,
+        rowHeight,
+        lastRowSticky: trailingRowType,
+        rows,
+    } = arg;
+    if (width === 0 || height === 0) return;
+
+    const totalHeaderHeight = enableGroups ? groupHeaderHeight + headerHeight : headerHeight;
+
+    const getRowHeight = typeof rowHeight === "number" ? () => rowHeight : rowHeight;
+    const effectiveCols = getEffectiveColumns(mappedColumns, cellXOffset, width, dragAndDropState, translateX);
+
+    return walkAllVisibleCells(
+        effectiveCols,
+        height,
+        totalHeaderHeight,
+        translateX,
+        translateY,
+        cellYOffset,
+        rows,
+        getRowHeight,
+        trailingRowType,
+    );
+}
+
 export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
     const {
         canvas,
@@ -2089,9 +2233,12 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         renderStrategy,
         bufferA,
         bufferB,
+        onGridDrawn,
+        getBounds,
     } = arg;
     let { damage } = arg;
     if (width === 0 || height === 0) return;
+
     const doubleBuffer = renderStrategy === "double-buffer";
     const dpr = scrolling ? 1 : Math.ceil(window.devicePixelRatio ?? 1);
 
@@ -2206,7 +2353,6 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             touchMode
         );
 
-        // Disabled Grid Lines
         // drawGridLines(
         //     overlayCtx,
         //     effectiveCols,
@@ -2291,10 +2437,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 true
             );
 
-            // TODO: Causes issue in cell rendering
-            // targetCtx.fillStyle = theme.bgCell;
-            // targetCtx.fillRect(0, totalHeaderHeight + 1, width, height - totalHeaderHeight - 1);
-            // console.log('Clearing rect', height, totalHeaderHeight, groupHeaderHeight, damage);
+            targetCtx.fillStyle = theme.bgCell;
+            targetCtx.fillRect(0, totalHeaderHeight + 1, width, height - totalHeaderHeight - 1);
 
             drawCells(
                 targetCtx,
@@ -2377,6 +2521,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             );
             drawHeaderTexture();
         }
+        onGridDrawn?.(targetCtx, getBounds);
         targetCtx.restore();
         overlayCtx.restore();
 
@@ -2617,6 +2762,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         mustDrawFocusOnHeader,
         lastBuffer: doubleBuffer ? (targetBuffer === bufferA ? "a" : "b") : undefined,
     };
+
+    onGridDrawn?.(targetCtx, getBounds);
 
     targetCtx.restore();
     overlayCtx.restore();

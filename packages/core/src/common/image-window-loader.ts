@@ -102,9 +102,10 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
 
     private loadImage(url: string, col: number, row: number, key: string) {
         let loaded = false;
-        const img = imgPool.pop() ?? new Image();
+        const img = new Image();
 
         let canceled = false;
+
         const result: LoadResult = {
             img: undefined,
             cells: [packColRowToNumber(col, row)],
@@ -112,7 +113,8 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
             cancel: () => {
                 if (canceled) return;
                 canceled = true;
-                if (imgPool.length < 12) {
+                img.src = "";
+                if (imgPool.length < 24) {
                     imgPool.unshift(img); // never retain more than 12
                 } else if (!loaded) {
                     img.src = "";
@@ -127,6 +129,7 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
                 img.src = url;
                 await loadPromise;
                 await img.decode();
+
                 const toWrite = this.cache[key];
                 if (toWrite !== undefined && !canceled) {
                     toWrite.img = img;
@@ -143,9 +146,7 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
         this.cache[key] = result;
     }
 
-    public loadOrGetImage(url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
-        const key = url;
-
+    public loadOrGetImage(key: string, url: string, col: number, row: number): HTMLImageElement | ImageBitmap | undefined {
         const current = this.cache[key];
         if (current !== undefined) {
             const packed = packColRowToNumber(col, row);

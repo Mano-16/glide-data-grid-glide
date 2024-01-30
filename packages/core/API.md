@@ -397,7 +397,7 @@ Requests the data grid to scroll to a particular location. If only one direction
 ## appendRow
 
 ```ts
-appendRow: (col: number) => Promise<void>;
+appendRow: (col: number, openOverlay: boolean = true) => Promise<void>;
 ```
 
 Appends a row to the data grid.
@@ -506,19 +506,29 @@ onVisibleRegionChanged?: (range: Rectangle) => void;
 ## provideEditor
 
 ```ts
-interface EditorProps {
-    readonly onChange: (newValue: GridCell) => void;
-    readonly onFinishedEditing: (newValue?: GridCell) => void;
+export type ProvideEditorComponent<T extends InnerGridCell> = React.FunctionComponent<{
+    readonly onChange: (newValue: T) => void;
+    readonly onFinishedEditing: (newValue?: T, movement?: readonly [-1 | 0 | 1, -1 | 0 | 1]) => void;
     readonly isHighlighted: boolean;
-    readonly value: GridCell;
-}
+    readonly value: T;
+    readonly initialValue?: string;
+    readonly validatedSelection?: SelectionRange;
+    readonly imageEditorOverride?: ImageEditorType;
+    readonly markdownDivCreateNode?: (content: string) => DocumentFragment;
+    readonly target: Rectangle;
+    readonly forceEditMode: boolean;
+    readonly isValid?: boolean;
+}>;
 
-type ProvideEditorCallback = (cell: GridCell) =>
-    (React.FunctionComponent<EditorProps> & {
+export type ProvideEditorCallbackResult<T extends InnerGridCell> =
+    | (ProvideEditorComponent<T> & {
           disablePadding?: boolean;
           disableStyling?: boolean;
       })
+    | ObjectEditorCallbackResult<T>
     | undefined;
+
+export type ProvideEditorCallback<T extends InnerGridCell> = (cell: T) => ProvideEditorCallbackResult<T>;
 
 provideEditor?: ProvideEditorCallback<GridCell>;
 ```
@@ -754,7 +764,7 @@ Controls the drawing of the left hand vertical border of a column. If set to a b
 
 ```ts
 gridSelection?: GridSelection;
-onGridSelectionChange?: (newSelection: GridSelection | undefined) => void;
+onGridSelectionChange?: (newSelection: GridSelection | undefined, event?: GridMouseEventArgs) => void;
 ```
 
 The currently selected `cell` and `range` in the data grid. If provided the `onGridSelectionChange` event should also be used as this property is controlled via that event. If this property is not provided, nor should the `onGridSelectionChange` event be.

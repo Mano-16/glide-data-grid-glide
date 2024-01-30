@@ -1,7 +1,7 @@
 import React from "react";
-import { CompactSelection, GridSelection, Slice } from "./data-grid-types";
+import { CompactSelection, GridKeyEventArgs, GridMouseEventArgs, GridSelection, Slice } from "./data-grid-types";
 
-type SetCallback = (newVal: GridSelection, expand: boolean) => void;
+type SetCallback = (newVal: GridSelection, expand: boolean, event?: GridMouseEventArgs | GridKeyEventArgs) => void;
 
 export type SelectionBlending = "exclusive" | "mixed";
 
@@ -21,7 +21,8 @@ export function useSelectionBehavior(
             value: Pick<NonNullable<GridSelection["current"]>, "cell" | "range"> | undefined,
             expand: boolean,
             append: boolean,
-            trigger: SelectionTrigger
+            trigger: SelectionTrigger, 
+            event?: GridMouseEventArgs | GridKeyEventArgs
         ) => {
             if ((rangeSelect === "cell" || rangeSelect === "multi-cell") && value !== undefined) {
                 value = {
@@ -59,13 +60,13 @@ export function useSelectionBehavior(
                     },
                 };
             }
-            setGridSelection(newVal, expand);
+            setGridSelection(newVal, expand, event);
         },
         [columnBehavior, gridSelection, rangeBehavior, rangeSelect, rowBehavior, setGridSelection]
     );
 
     const setSelectedRows = React.useCallback(
-        (newRows: CompactSelection | undefined, append: Slice | number | undefined, allowMixed: boolean): void => {
+        (newRows: CompactSelection | undefined, append: Slice | number | undefined, allowMixed: boolean, event: GridMouseEventArgs | GridKeyEventArgs): void => {
             newRows = newRows ?? gridSelection.rows;
             if (append !== undefined) {
                 newRows = newRows.add(append);
@@ -87,13 +88,13 @@ export function useSelectionBehavior(
                     rows: newRows,
                 };
             }
-            setGridSelection(newVal, false);
+            setGridSelection(newVal, false, event);
         },
         [columnBehavior, gridSelection, rangeBehavior, rowBehavior, setGridSelection]
     );
 
     const setSelectedColumns = React.useCallback(
-        (newCols: CompactSelection | undefined, append: number | Slice | undefined, allowMixed: boolean): void => {
+        (newCols: CompactSelection | undefined, append: number | Slice | undefined, allowMixed: boolean, event?: GridMouseEventArgs | GridKeyEventArgs): void => {
             newCols = newCols ?? gridSelection.columns;
             if (append !== undefined) {
                 newCols = newCols.add(append);
@@ -115,7 +116,7 @@ export function useSelectionBehavior(
                     columns: newCols,
                 };
             }
-            setGridSelection(newVal, false);
+            setGridSelection(newVal, false, event);
         },
         [columnBehavior, gridSelection, rangeBehavior, rowBehavior, setGridSelection]
     );

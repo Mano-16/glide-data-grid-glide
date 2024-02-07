@@ -1,5 +1,5 @@
 import React from "react";
-import { DataEditor } from "../../data-editor/data-editor";
+import { DataEditorAll as DataEditor } from "../../data-editor-all.js";
 import {
     BeautifulWrapper,
     Description,
@@ -8,9 +8,10 @@ import {
     KeyName,
     defaultProps,
     useAllMockedKinds,
-} from "../../data-editor/stories/utils";
-import type { Item } from "../../data-grid/data-grid-types";
-import { SimpleThemeWrapper } from "../../stories/story-utils";
+} from "../../data-editor/stories/utils.js";
+import type { GridCell, Item } from "../../internal/data-grid/data-grid-types.js";
+import { SimpleThemeWrapper } from "../../stories/story-utils.js";
+import type { DataEditorCoreProps } from "../../index.js";
 
 export default {
     title: "Glide-Data-Grid/DataEditor Demos",
@@ -24,8 +25,23 @@ export default {
     ],
 };
 
-export const CellActivatedEvent: React.VFC = () => {
+export const CellActivatedEvent: React.VFC<Pick<DataEditorCoreProps, "cellActivationBehavior">> = p => {
     const { cols, getCellContent, onColumnResize, setCellValue } = useAllMockedKinds();
+
+    const getCellContentMangled = React.useCallback(
+        (item: Item): GridCell => {
+            const result = getCellContent(item);
+            if (item[0] === 3) {
+                return {
+                    ...result,
+                    activationBehaviorOverride: "single-click",
+                    hoverEffect: true,
+                } as any;
+            }
+            return result;
+        },
+        [getCellContent]
+    );
 
     const [lastActivated, setLastActivated] = React.useState<Item | undefined>(undefined);
 
@@ -50,7 +66,9 @@ export const CellActivatedEvent: React.VFC = () => {
             }>
             <DataEditor
                 {...defaultProps}
-                getCellContent={getCellContent}
+                // editorBloom={[-1, -4]}
+                cellActivationBehavior={p.cellActivationBehavior}
+                getCellContent={getCellContentMangled}
                 //initialSize={[849, 967]}
                 //scrollOffsetY={10_000}
                 getCellsForSelection={true}
@@ -62,4 +80,13 @@ export const CellActivatedEvent: React.VFC = () => {
             />
         </BeautifulWrapper>
     );
+};
+(CellActivatedEvent as any).argTypes = {
+    cellActivationBehavior: {
+        control: { type: "select" },
+        options: ["double-click", "single-click", "second-click"],
+    },
+};
+(CellActivatedEvent as any).args = {
+    cellActivationBehavior: "second-click",
 };

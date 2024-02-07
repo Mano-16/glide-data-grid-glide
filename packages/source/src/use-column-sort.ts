@@ -1,4 +1,4 @@
-import { DataEditorProps, GridCell, GridCellKind, GridColumn } from "@lumel/glide-data-grid";
+import { type DataEditorProps, type GridCell, GridCellKind, type GridColumn } from "@lumel/glide-data-grid";
 import range from "lodash/range.js";
 import * as React from "react";
 

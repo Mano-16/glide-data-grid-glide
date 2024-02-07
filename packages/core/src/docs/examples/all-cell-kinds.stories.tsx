@@ -1,13 +1,13 @@
 import React from "react";
-import { DataEditor } from "../../data-editor/data-editor";
+import { DataEditorAll as DataEditor } from "../../data-editor-all.js";
 import {
     BeautifulWrapper,
     Description,
     PropName,
     defaultProps,
     useAllMockedKinds,
-} from "../../data-editor/stories/utils";
-import { SimpleThemeWrapper } from "../../stories/story-utils";
+} from "../../data-editor/stories/utils.js";
+import { SimpleThemeWrapper } from "../../stories/story-utils.js";
 
 export default {
     title: "Glide-Data-Grid/DataEditor Demos",
@@ -38,6 +38,7 @@ export const AllCellKinds: React.VFC = () => {
             getCellContent={getCellContent}
             columns={cols}
             onCellEdited={setCellValue}
+            onPaste={true}
             // rowHeight={55}
             onColumnResize={onColumnResize}
             highlightRegions={[

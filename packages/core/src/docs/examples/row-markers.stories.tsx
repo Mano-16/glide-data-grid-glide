@@ -1,13 +1,14 @@
 import React from "react";
-import { DataEditor, DataEditorProps } from "../../data-editor/data-editor";
+import { type RowMarkerOptions } from "../../data-editor/data-editor.js";
+import { DataEditorAll as DataEditor } from "../../data-editor-all.js";
 import {
     BeautifulWrapper,
     Description,
     PropName,
     useMockDataGenerator,
     defaultProps,
-} from "../../data-editor/stories/utils";
-import { SimpleThemeWrapper } from "../../stories/story-utils";
+} from "../../data-editor/stories/utils.js";
+import { SimpleThemeWrapper } from "../../stories/story-utils.js";
 
 export default {
     title: "Glide-Data-Grid/DataEditor Demos",
@@ -32,7 +33,7 @@ export default {
 };
 
 interface RowMarkersProps {
-    markers: DataEditorProps["rowMarkers"];
+    markers: RowMarkerOptions["kind"];
 }
 
 export const RowMarkers: React.VFC<RowMarkersProps> = p => {
@@ -42,7 +43,11 @@ export const RowMarkers: React.VFC<RowMarkersProps> = p => {
         <DataEditor
             {...defaultProps}
             getCellContent={getCellContent}
-            rowMarkers={p.markers}
+            verticalBorder={false}
+            rowMarkers={{
+                kind: p.markers,
+                checkboxStyle: "circle",
+            }}
             columns={cols}
             rows={400}
         />
@@ -53,6 +58,7 @@ export const RowMarkers: React.VFC<RowMarkersProps> = p => {
 };
 (RowMarkers as any).argTypes = {
     markers: {
-        control: { type: "select", options: ["both", "checkbox", "number", "none", "clickable-number"] },
+        control: { type: "select" },
+        options: ["both", "checkbox", "number", "none", "clickable-number", "checkbox-visible"],
     },
 };

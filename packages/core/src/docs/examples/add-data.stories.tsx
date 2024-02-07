@@ -1,5 +1,5 @@
 import React from "react";
-import { DataEditor } from "../../data-editor/data-editor";
+import { DataEditorAll as DataEditor } from "../../data-editor-all.js";
 import {
     BeautifulWrapper,
     Description,
@@ -8,8 +8,8 @@ import {
     KeyName,
     defaultProps,
     clearCell,
-} from "../../data-editor/stories/utils";
-import { SimpleThemeWrapper } from "../../stories/story-utils";
+} from "../../data-editor/stories/utils.js";
+import { SimpleThemeWrapper } from "../../stories/story-utils.js";
 
 export default {
     title: "Glide-Data-Grid/DataEditor Demos",
@@ -62,7 +62,7 @@ export const AddData: React.VFC = () => {
             onCellEdited={setCellValue} // Sets the mock cell content
             trailingRowOptions={{
                 // How to get the trailing row to look right
-                sticky: true,
+                sticky: false,
                 tint: true,
                 hint: "New row...",
             }}

@@ -5,7 +5,7 @@ import type { HoverValues } from "../animation-manager.js";
 import type { CellSet } from "../cell-set.js";
 import { withAlpha } from "../color-parser.js";
 import type { SpriteManager, SpriteVariant } from "../data-grid-sprites.js";
-import { type DrawHeaderCallback, type Rectangle, GridColumnMenuIcon, type GridSelection, DrawGroupCallback, Item } from "../data-grid-types.js";
+import { type DrawHeaderCallback, type Rectangle, GridColumnMenuIcon, type GridSelection, type DrawGroupCallback, type Item } from "../data-grid-types.js";
 import {
     drawMenuDots,
     getMiddleCenterBias,

@@ -1,6 +1,6 @@
 import React from "react";
 import { CompactSelection, type GridSelection, type Slice } from "./data-grid-types.js";
-import { GridKeyEventArgs, GridMouseEventArgs } from "./event-args.js";
+import { type GridKeyEventArgs, type GridMouseEventArgs } from "./event-args.js";
 
 type SetCallback = (newVal: GridSelection, expand: boolean, event?: GridMouseEventArgs | GridKeyEventArgs) => void;
 

@@ -32,7 +32,7 @@ import {
     type FillHandleDirection,
     type EditListItem,
     type CellActiviationBehavior,
-    VisibleCellMeta,
+    type VisibleCellMeta,
 } from "../internal/data-grid/data-grid-types.js";
 import DataGridSearch, { type DataGridSearchProps } from "../internal/data-grid-search/data-grid-search.js";
 import { browserIsOSX } from "../common/browser-detect.js";
@@ -868,8 +868,9 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         onColumnHeaderDblClick,
         onColumnGroupHeaderDblClick,
         isOutsideClick,
-        onGridDrawn
+        onGridDrawn,
         renderers,
+        showMinimap,
     } = p;
 
     const rowMarkersObj = typeof p.rowMarkers === "string" ? undefined : p.rowMarkers;
@@ -3982,6 +3983,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 inWidth={width ?? idealWidth}
                 inHeight={height ?? idealHeight}>
                 <DataGridSearch
+                    showMinimap={showMinimap}
                     fillHandle={fillHandle}
                     drawFocusRing={drawFocusRing}
                     experimental={experimental}

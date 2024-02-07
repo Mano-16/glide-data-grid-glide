@@ -6,7 +6,7 @@ import {
     getEffectiveColumns,
     getRowIndexForY,
     getStickyWidth,
-    MappedGridColumn,
+    type MappedGridColumn,
     rectBottomRight,
     useMappedColumns,
 } from "./render/data-grid-lib.js";
@@ -24,8 +24,8 @@ import {
     booleanCellIsEditable,
     type InnerGridColumn,
     type DrawCellCallback,
-    DrawGroupCallback,
-    VisibleCellMeta,
+    type DrawGroupCallback,
+    type VisibleCellMeta,
 } from "./data-grid-types.js";
 import { CellSet } from "./cell-set.js";
 import { SpriteManager, type SpriteMap } from "./data-grid-sprites.js";

@@ -131,6 +131,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         drawFocus,
         headerHeight,
         groupHeaderHeight,
+        groupHeaderLevels,
         disabledRows,
         rowHeight,
         verticalBorder,
@@ -168,7 +169,6 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         minimumCellWidth,
         onGridDrawn,
         getBounds,
-        groupHeaderLevels,
         drawGroupCallback,
     } = arg;
     if (width === 0 || height === 0) return;
@@ -280,8 +280,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             width,
             translateX,
             headerHeight,
-            groupHeaderLevels,
             groupHeaderHeight,
+            groupHeaderLevels,
             dragAndDropState,
             isResizing,
             selection,

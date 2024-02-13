@@ -1838,32 +1838,33 @@ function drawHighlightRings(
         };
 
         ctx.lineWidth = 1;
-        for (const dr of drawRects) {
-            const [s] = dr;
-            if (
-                s !== undefined &&
-                intersectRect(0, 0, width, height, s.rect.x, s.rect.y, s.rect.width, s.rect.height)
-            ) {
-                setDashed(s.style === "dashed");
-                ctx.strokeStyle = withAlpha(s.color, 1);
-                ctx.strokeRect(s.rect.x + 1, s.rect.y + 1, s.rect.width - 2, s.rect.height - 2);
-            }
-        }
         let clipped = false;
         for (const dr of drawRects) {
+            const [l]=dr
             const [, s] = dr;
+            let borderRect;
+            if(l&&s){
+                const borderWidth = l.rect.width+s.rect.width -(l.rect.x+l.rect.width-s.rect.x);
+                borderRect = borderWidth<l.rect.width ? {style:l.style, color:l.color,rect:{...l.rect}} : {style:l.style||s.style,color:l.color || s.color,rect:{x:l.rect.x,y:l.rect.y,width:borderWidth,height:l.rect.height}};
+            }
+            else if(l){
+                borderRect={style:l.style, color:l.color,rect:{...l.rect}}
+            }
+            else if(s){
+                borderRect={style:s.style, color:s.color,rect:{...s.rect}}
+            }
             if (
-                s !== undefined &&
-                intersectRect(0, 0, width, height, s.rect.x, s.rect.y, s.rect.width, s.rect.height)
+                borderRect !== undefined &&
+                intersectRect(0, 0, width, height, borderRect.rect.x, borderRect.rect.y, borderRect.rect.width, borderRect.rect.height)
             ) {
-                setDashed(s.style === "dashed");
-                if (!clipped && s.rect.x < stickyWidth) {
+                setDashed(borderRect.style === "dashed");
+                if (!l&& s&& !clipped && borderRect.rect.x < stickyWidth) {
                     ctx.rect(stickyWidth, 0, width, height);
                     ctx.clip();
                     clipped = true;
                 }
-                ctx.strokeStyle = withAlpha(s.color, 1);
-                ctx.strokeRect(s.rect.x + 1, s.rect.y + 1, s.rect.width - 2, s.rect.height - 2);
+                ctx.strokeStyle = withAlpha(borderRect.color, 1);
+                ctx.strokeRect(borderRect.rect.x + 1, borderRect.rect.y + 1, borderRect.rect.width-2, borderRect.rect.height - 2);
             }
         }
         ctx.restore();

@@ -1,29 +1,28 @@
 import { styled } from "@linaria/react";
 import * as React from "react";
-import { DataEditor, DataEditorProps, GridCellKind } from "@lumel/glide-data-grid";
-import { DropdownCell as DropdownRenderer, useExtraCells } from ".";
-import type { StarCell } from "./cells/star-cell";
-import type { SparklineCell } from "./cells/sparkline-cell";
+import { DataEditor, type DataEditorProps, GridCellKind } from "@lumel/glide-data-grid";
+import { DropdownCell as DropdownRenderer, MultiSelectCell as MultiSelectRenderer, allCells } from "./index.js";
+import type { StarCell } from "./cells/star-cell.js";
+import type { SparklineCell } from "./cells/sparkline-cell.js";
 import range from "lodash/range.js";
 import uniq from "lodash/uniq.js";
-import type { TagsCell } from "./cells/tags-cell";
-import type { UserProfileCell } from "./cells/user-profile-cell";
-import type { DropdownCell } from "./cells/dropdown-cell";
-import type { ArticleCell } from "./cells/article-cell-types";
-import type { RangeCell } from "./cells/range-cell";
-import type { SpinnerCell } from "./cells/spinner-cell";
+import type { TagsCell } from "./cells/tags-cell.js";
+import type { UserProfileCell } from "./cells/user-profile-cell.js";
+import type { DropdownCell } from "./cells/dropdown-cell.js";
+import type { ArticleCell } from "./cells/article-cell-types.js";
+import type { RangeCell } from "./cells/range-cell.js";
+import type { SpinnerCell } from "./cells/spinner-cell.js";
 import { useResizeDetector } from "react-resize-detector";
 
 import "@toast-ui/editor/dist/toastui-editor.css";
 import "@lumel/glide-data-grid/dist/index.css";
-import type { DatePickerCell } from "./cells/date-picker-cell";
-import type { LinksCell } from "./cells/links-cell";
-import type { ButtonCell } from "./cells/button-cell";
+import type { DatePickerCell } from "./cells/date-picker-cell.js";
+import type { LinksCell } from "./cells/links-cell.js";
+import type { ButtonCell } from "./cells/button-cell.js";
+import type { TreeViewCell } from "./cells/tree-view-cell.js";
+import type { MultiSelectCell } from "./cells/multi-select-cell.js";
 
 const SimpleWrapper = styled.div`
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-
     box-sizing: border-box;
 
     *,
@@ -79,7 +78,9 @@ const BeautifulStyle = styled.div`
         background-color: white;
 
         border-radius: 12px;
-        box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+        box-shadow:
+            rgba(9, 30, 66, 0.25) 0px 4px 8px -2px,
+            rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
 
         .sizer-clip {
             border-radius: 12px;
@@ -168,13 +169,11 @@ const possibleTags = [
 ];
 
 export const CustomCells: React.VFC = () => {
-    const cellProps = useExtraCells();
-
     return (
         <BeautifulWrapper title="Custom cells" description={<Description>Some of our extension cells.</Description>}>
             <DataEditor
                 {...defaultProps}
-                {...cellProps}
+                customRenderers={allCells}
                 onPaste={true}
                 // eslint-disable-next-line no-console
                 onCellEdited={(...args) => console.log("Edit Cell", ...args)}
@@ -209,6 +208,23 @@ export const CustomCells: React.VFC = () => {
                         } as SparklineCell;
                     } else if (col === 2) {
                         num = row + 1;
+                        const values = range(0, 15).map(() => rand() * 100 - 50);
+                        return {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: false,
+                            copyData: "4",
+                            data: {
+                                kind: "sparkline-cell",
+                                values,
+                                displayValues: values.map(x => Math.round(x).toString()),
+                                color: row % 2 === 0 ? "#77c4c4" : "#D98466",
+                                graphKind: "line",
+                                hideAxis: true,
+                                yAxis: [-50, 50],
+                            },
+                        } as SparklineCell;
+                    } else if (col === 3) {
+                        num = row + 1;
                         return {
                             kind: GridCellKind.Custom,
                             allowOverlay: false,
@@ -221,17 +237,17 @@ export const CustomCells: React.VFC = () => {
                                 yAxis: [-50, 50],
                             },
                         } as SparklineCell;
-                    } else if (col === 3) {
+                    } else if (col === 4) {
                         num = row + 1;
                         rand();
                         return {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "tags-cell",
                                 possibleTags: possibleTags,
-                                readonly: row % 2 === 0,
                                 tags: uniq([
                                     possibleTags[Math.round(rand() * 1000) % possibleTags.length].tag,
                                     possibleTags[Math.round(rand() * 1000) % possibleTags.length].tag,
@@ -240,13 +256,14 @@ export const CustomCells: React.VFC = () => {
                                 ]),
                             },
                         } as TagsCell;
-                    } else if (col === 4) {
+                    } else if (col === 5) {
                         num = row + 1;
                         rand();
                         return {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "user-profile-cell",
                                 image: row % 2 ? undefined : "https://i.redd.it/aqc1hwhalsz71.jpg",
@@ -255,21 +272,30 @@ export const CustomCells: React.VFC = () => {
                                 name: row % 5 ? undefined : "Bee bb",
                             },
                         } as UserProfileCell;
-                    } else if (col === 5) {
+                    } else if (col === 6) {
                         num = row + 1;
                         rand();
                         const d: DropdownCell = {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "dropdown-cell",
-                                allowedValues: ["Good", "Better", "Best"],
+                                allowedValues: [
+                                    null,
+                                    "Good",
+                                    "Better",
+                                    {
+                                        value: "best",
+                                        label: "Best",
+                                    },
+                                ],
                                 value: "Good",
                             },
                         };
                         return d;
-                    } else if (col === 6) {
+                    } else if (col === 7) {
                         num = row + 1;
                         rand();
                         const v = rand();
@@ -277,6 +303,7 @@ export const CustomCells: React.VFC = () => {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "range-cell",
                                 min: 10,
@@ -288,20 +315,21 @@ export const CustomCells: React.VFC = () => {
                             },
                         };
                         return d;
-                    } else if (col === 7) {
+                    } else if (col === 8) {
                         num = row + 1;
                         rand();
                         const d: ArticleCell = {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "article-cell",
                                 markdown: "## This is a test",
                             },
                         };
                         return d;
-                    } else if (col === 8) {
+                    } else if (col === 9) {
                         num = row + 1;
                         rand();
                         const d: SpinnerCell = {
@@ -313,21 +341,6 @@ export const CustomCells: React.VFC = () => {
                             },
                         };
                         return d;
-                    } else if (col === 9) {
-                        num = row + 1;
-                        rand();
-                        const d: DatePickerCell = {
-                            kind: GridCellKind.Custom,
-                            allowOverlay: true,
-                            copyData: "4",
-                            data: {
-                                kind: "date-picker-cell",
-                                date: new Date(),
-                                displayDate: new Date().toISOString(),
-                                format: "datetime-local",
-                            },
-                        };
-                        return d;
                     } else if (col === 10) {
                         num = row + 1;
                         rand();
@@ -335,11 +348,12 @@ export const CustomCells: React.VFC = () => {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "date-picker-cell",
                                 date: new Date(),
-                                displayDate: new Date().toISOString().split("T")[0],
-                                format: "date",
+                                displayDate: new Date().toISOString(),
+                                format: "datetime-local",
                             },
                         };
                         return d;
@@ -350,6 +364,23 @@ export const CustomCells: React.VFC = () => {
                             kind: GridCellKind.Custom,
                             allowOverlay: true,
                             copyData: "4",
+                            readonly: row % 2 === 0,
+                            data: {
+                                kind: "date-picker-cell",
+                                date: new Date(),
+                                displayDate: new Date().toISOString().split("T")[0],
+                                format: "date",
+                            },
+                        };
+                        return d;
+                    } else if (col === 12) {
+                        num = row + 1;
+                        rand();
+                        const d: DatePickerCell = {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: "4",
+                            readonly: row % 2 === 0,
                             data: {
                                 kind: "date-picker-cell",
                                 date: new Date(),
@@ -358,7 +389,7 @@ export const CustomCells: React.VFC = () => {
                             },
                         };
                         return d;
-                    } else if (col === 12) {
+                    } else if (col === 13) {
                         num = row + 1;
                         rand();
                         const d: LinksCell = {
@@ -381,12 +412,11 @@ export const CustomCells: React.VFC = () => {
                             },
                         };
                         return d;
-                    } else if (col === 13) {
+                    } else if (col === 14) {
                         num = row + 1;
                         rand();
                         const d: ButtonCell = {
                             kind: GridCellKind.Custom,
-                            cursor: "pointer",
                             allowOverlay: true,
                             copyData: "4",
                             readonly: true,
@@ -404,16 +434,58 @@ export const CustomCells: React.VFC = () => {
                             },
                         };
                         return d;
+                    } else if (col === 15) {
+                        const t: TreeViewCell = {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: false,
+                            copyData: "4",
+                            data: {
+                                canOpen: true,
+                                depth: row % 3,
+                                isOpen: row % 7 === 0,
+                                kind: "tree-view-cell",
+                                text: "Row " + row,
+                                onClickOpener: () => {
+                                    alert("Open");
+                                    return undefined;
+                                },
+                            },
+                            readonly: true,
+                        };
+                        return t;
+                    } else if (col === 16) {
+                        const t: MultiSelectCell = {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: ["glide", "data", "grid"].join(","),
+                            readonly: row % 2 === 0,
+                            data: {
+                                kind: "multi-select-cell",
+                                values: ["glide", "data", "grid"],
+                                options: [
+                                    { value: "glide", color: "#ffc38a" },
+                                    { value: "data", color: "#ebfdea" },
+                                    { value: "grid", color: "teal" },
+                                ],
+                                allowDuplicates: false,
+                                allowCreation: true,
+                            },
+                        };
+                        return t;
                     }
                     throw new Error("Fail");
                 }}
                 columns={[
                     {
                         title: "Stars",
-                        width: 200,
+                        width: 100,
                     },
                     {
-                        title: "Sparkline",
+                        title: "Sparkline (area)",
+                        width: 150,
+                    },
+                    {
+                        title: "Sparkline (line)",
                         width: 150,
                     },
                     {
@@ -464,6 +536,14 @@ export const CustomCells: React.VFC = () => {
                         title: "Button",
                         width: 120,
                     },
+                    {
+                        title: "TreeView",
+                        width: 150,
+                    },
+                    {
+                        id: "multiselect",
+                        title: "Multiselect",
+                    },
                 ]}
                 rows={500}
             />
@@ -477,9 +557,7 @@ export const CustomCells: React.VFC = () => {
 };
 
 export const CustomCellEditing: React.VFC = () => {
-    const cellProps = useExtraCells();
-
-    const data = React.useRef<string[]>([]);
+    const data = React.useRef<any[][]>([[]]);
 
     return (
         <BeautifulWrapper
@@ -491,32 +569,86 @@ export const CustomCellEditing: React.VFC = () => {
             }>
             <DataEditor
                 {...defaultProps}
-                {...cellProps}
+                customRenderers={allCells}
                 onPaste={true}
+                fillHandle={true}
                 onCellEdited={(cell, newVal) => {
-                    if (newVal.kind !== GridCellKind.Custom) return;
-                    if (DropdownRenderer.isMatch(newVal)) {
-                        data.current[cell[1]] = newVal.data.value ?? "";
+                    const [col, row] = cell;
+                    if (newVal.kind !== GridCellKind.Custom) {
+                        return;
+                    }
+                    if (data.current?.[col] == null) {
+                        data.current[col] = [];
+                    }
+                    if (DropdownRenderer.isMatch(newVal) && col === 0) {
+                        data.current[col][row] = newVal.data.value ?? "";
+                    } else if (MultiSelectRenderer.isMatch(newVal) && (col === 1 || col === 2)) {
+                        data.current[col][row] = newVal.data.values ?? [];
                     }
                 }}
                 getCellsForSelection={true}
                 getCellContent={cell => {
-                    const [, row] = cell;
-                    const val = data.current[row] ?? "A";
-                    return {
-                        kind: GridCellKind.Custom,
-                        allowOverlay: true,
-                        copyData: val,
-                        data: {
-                            kind: "dropdown-cell",
-                            allowedValues: ["A", "B", "C"],
-                            value: val,
-                        },
-                    } as DropdownCell;
+                    const [col, row] = cell;
+                    if (col === 0) {
+                        const val = data.current?.[col]?.[row] ?? "A";
+                        return {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: val,
+                            data: {
+                                kind: "dropdown-cell",
+                                allowedValues: ["A", "B", "C"],
+                                value: val,
+                            },
+                        } as DropdownCell;
+                    } else if (col === 1) {
+                        const val = data.current?.[col]?.[row] ?? ["glide"];
+                        return {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: val?.join(","),
+                            data: {
+                                kind: "multi-select-cell",
+                                values: val,
+                                options: [
+                                    { value: "glide", color: "#ffc38a", label: "Glide" },
+                                    { value: "data", color: "#ebfdea", label: "Data" },
+                                    { value: "grid", color: "teal", label: "Grid" },
+                                ],
+                                allowDuplicates: false,
+                                allowCreation: true,
+                            },
+                        } as MultiSelectCell;
+                    } else if (col === 2) {
+                        const val = data.current?.[col]?.[row] ?? ["glide data grid"];
+                        return {
+                            kind: GridCellKind.Custom,
+                            allowOverlay: true,
+                            copyData: val?.join(","),
+                            data: {
+                                kind: "multi-select-cell",
+                                values: val,
+                                allowDuplicates: true,
+                                allowCreation: true,
+                            },
+                        } as MultiSelectCell;
+                    }
+                    throw new Error("Fail");
                 }}
                 columns={[
                     {
                         title: "Dropdown",
+                        width: 150,
+                    },
+                    {
+                        title: "Multi Select",
+                        width: 200,
+                        themeOverride: {
+                            roundingRadius: 4,
+                        },
+                    },
+                    {
+                        title: "Multi Select (no options)",
                         width: 200,
                     },
                 ]}

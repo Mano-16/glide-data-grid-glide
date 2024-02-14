@@ -1,4 +1,5 @@
 import React from "react";
+import { blend } from "../internal/data-grid/color-parser.js";
 
 // theme variable precidence
 
@@ -36,6 +37,13 @@ export function makeCSSStyle(theme: Theme): Record<string, string> {
         "--gdg-marker-font-style": theme.markerFontStyle,
         "--gdg-font-family": theme.fontFamily,
         "--gdg-editor-font-size": theme.editorFontSize,
+        ...(theme.resizeIndicatorColor === undefined
+            ? {}
+            : { "--gdg-resize-indicator-color": theme.resizeIndicatorColor }),
+        ...(theme.headerBottomBorderColor === undefined
+            ? {}
+            : { "--gdg-header-bottom-border-color": theme.headerBottomBorderColor }),
+        ...(theme.roundingRadius === undefined ? {} : { "--gdg-rounding-radius": `${theme.roundingRadius}px` }),
     };
 }
 
@@ -63,8 +71,6 @@ export interface Theme {
     bgBubbleSelected: string;
     bgSearchResult: string;
     borderColor: string;
-    horizontalBorderColor?: string;
-    headerBottomBorderColor?: string;
     drilldownBorder: string;
     linkColor: string;
     cellHorizontalPadding: number;
@@ -83,7 +89,11 @@ export interface Theme {
             bottom: number;
             left: number;
             right: number;
-    }
+    },
+    resizeIndicatorColor?: string;
+    horizontalBorderColor?: string;
+    headerBottomBorderColor?: string;
+    roundingRadius?: number;
 }
 
 const dataEditorBaseTheme: Theme = {
@@ -116,7 +126,7 @@ const dataEditorBaseTheme: Theme = {
     borderColor: "rgba(115, 116, 131, 0.16)",
     drilldownBorder: "rgba(0, 0, 0, 0)",
 
-    linkColor: "#4F5DFF",
+    linkColor: "#353fb5",
 
     cellHorizontalPadding: 8,
     cellVerticalPadding: 3,
@@ -140,6 +150,12 @@ const dataEditorBaseTheme: Theme = {
     }
 };
 
+export interface FullTheme extends Theme {
+    headerFontFull: string;
+    baseFontFull: string;
+    markerFontFull: string;
+}
+
 /** @category Theme */
 export function getDataEditorTheme(): Theme {
     return dataEditorBaseTheme;
@@ -150,4 +166,49 @@ export const ThemeContext = React.createContext<Theme>(dataEditorBaseTheme);
 /** @category Hooks */
 export function useTheme(): Theme {
     return React.useContext(ThemeContext);
+}
+
+export function mergeAndRealizeTheme(theme: Theme, ...overlays: Partial<Theme | undefined>[]): FullTheme {
+    const merged: any = { ...theme };
+
+    for (const overlay of overlays) {
+        if (overlay !== undefined) {
+            for (const key in overlay) {
+                // eslint-disable-next-line no-prototype-builtins
+                if (overlay.hasOwnProperty(key)) {
+                    if (key === "bgCell") {
+                        merged[key] = blend(overlay[key] as string, merged[key]);
+                    } else {
+                        merged[key] = (overlay as any)[key];
+                    }
+                }
+            }
+        }
+    }
+
+    if (
+        merged.headerFontFull === undefined ||
+        theme.fontFamily !== merged.fontFamily ||
+        theme.headerFontStyle !== merged.headerFontStyle
+    ) {
+        merged.headerFontFull = `${merged.headerFontStyle} ${merged.fontFamily}`;
+    }
+
+    if (
+        merged.baseFontFull === undefined ||
+        theme.fontFamily !== merged.fontFamily ||
+        theme.baseFontStyle !== merged.baseFontStyle
+    ) {
+        merged.baseFontFull = `${merged.baseFontStyle} ${merged.fontFamily}`;
+    }
+
+    if (
+        merged.markerFontFull === undefined ||
+        theme.fontFamily !== merged.fontFamily ||
+        theme.markerFontStyle !== merged.markerFontStyle
+    ) {
+        merged.markerFontFull = `${merged.markerFontStyle} ${merged.fontFamily}`;
+    }
+
+    return merged;
 }

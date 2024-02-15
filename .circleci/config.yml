@@ -25,7 +25,6 @@ commands:
             - run:
                   name: 'Install Dependencies'
                   command: |
-                      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" | tee .npmrc
                       npm install && npm run build
                       cd <<parameters.directory>>
                       npm publish
@@ -54,5 +53,3 @@ workflows:
     deploy:
         jobs:
             - publish-core
-            - publish-cells
-            - publish-source

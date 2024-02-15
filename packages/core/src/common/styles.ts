@@ -76,7 +76,6 @@ export interface Theme {
     fontFamily: string;
     editorFontSize: string;
     lineHeight: number;
-    textDecoration : string | number
     padding: {
         
             top: number;
@@ -130,7 +129,6 @@ const dataEditorBaseTheme: Theme = {
         "Inter, Roboto, -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, noto, arial, sans-serif",
     editorFontSize: "13px",
     lineHeight: 1.4, //unitless scaler depends on your font
-    textDecoration : "initial",
     padding: {
         
             top: 0,

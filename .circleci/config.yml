@@ -1,6 +1,6 @@
 version: 2.1
 defaults: &defaults
-    executor: node18
+    executor: node20
 executors:
     node18:
         docker:

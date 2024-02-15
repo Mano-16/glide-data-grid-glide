@@ -14,6 +14,15 @@ commands:
                 default: ./packages/core
         steps:
             - run:
+                  name: 'Avoid CI build'
+                  command: |
+                      git log --format=oneline -n 1 $CIRCLE_SHA1 | tee commitmsg
+                      if grep -q builds commitmsg; then
+                          echo "publish" 
+                      else
+                          circleci-agent step halt
+                      fi
+            - run:
                   name: 'Install Dependencies'
                   command: |
                       echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" | tee .npmrc

@@ -1840,31 +1840,31 @@ function drawHighlightRings(
         ctx.lineWidth = 1;
         let clipped = false;
         for (const dr of drawRects) {
-            const [l]=dr
-            const [, s] = dr;
-            let borderRect;
-            if(l&&s){
-                const borderWidth = l.rect.width+s.rect.width -(l.rect.x+l.rect.width-s.rect.x);
-                borderRect = borderWidth<l.rect.width ? {style:l.style, color:l.color,rect:{...l.rect}} : {style:l.style||s.style,color:l.color || s.color,rect:{x:l.rect.x,y:l.rect.y,width:borderWidth,height:l.rect.height}};
+            const [freezeColHighlight]=dr
+            const [, remainingColHighlight] = dr;
+            let highlightBorder;
+            if(freezeColHighlight&&remainingColHighlight){
+                const borderWidth = freezeColHighlight.rect.width+remainingColHighlight.rect.width -(freezeColHighlight.rect.x+freezeColHighlight.rect.width-remainingColHighlight.rect.x);
+                highlightBorder = borderWidth<freezeColHighlight.rect.width ? {...freezeColHighlight} : {style:freezeColHighlight.style||remainingColHighlight.style,color:freezeColHighlight.color || remainingColHighlight.color,rect:{x:freezeColHighlight.rect.x,y:freezeColHighlight.rect.y,width:borderWidth,height:freezeColHighlight.rect.height}};
             }
-            else if(l){
-                borderRect={style:l.style, color:l.color,rect:{...l.rect}}
+            else if(freezeColHighlight){
+                highlightBorder={...freezeColHighlight}
             }
-            else if(s){
-                borderRect={style:s.style, color:s.color,rect:{...s.rect}}
+            else if(remainingColHighlight){
+                highlightBorder={...remainingColHighlight}
             }
             if (
-                borderRect !== undefined &&
-                intersectRect(0, 0, width, height, borderRect.rect.x, borderRect.rect.y, borderRect.rect.width, borderRect.rect.height)
+                highlightBorder !== undefined &&
+                intersectRect(0, 0, width, height, highlightBorder.rect.x, highlightBorder.rect.y, highlightBorder.rect.width, highlightBorder.rect.height)
             ) {
-                setDashed(borderRect.style === "dashed");
-                if (!l&& s&& !clipped && borderRect.rect.x < stickyWidth) {
+                setDashed(highlightBorder.style === "dashed");
+                if (!freezeColHighlight&& remainingColHighlight&& !clipped && highlightBorder.rect.x < stickyWidth) {
                     ctx.rect(stickyWidth, 0, width, height);
                     ctx.clip();
                     clipped = true;
                 }
-                ctx.strokeStyle = withAlpha(borderRect.color, 1);
-                ctx.strokeRect(borderRect.rect.x + 1, borderRect.rect.y + 1, borderRect.rect.width-2, borderRect.rect.height - 2);
+                ctx.strokeStyle = withAlpha(highlightBorder.color, 1);
+                ctx.strokeRect(highlightBorder.rect.x + 1, highlightBorder.rect.y + 1, highlightBorder.rect.width-2, highlightBorder.rect.height - 2);
             }
         }
         ctx.restore();

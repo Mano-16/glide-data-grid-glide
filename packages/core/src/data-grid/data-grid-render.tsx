@@ -1840,8 +1840,7 @@ function drawHighlightRings(
         ctx.lineWidth = 1;
         let clipped = false;
         for (const dr of drawRects) {
-            const [freezeColHighlight]=dr
-            const [, remainingColHighlight] = dr;
+            const [freezeColHighlight,remainingColHighlight]=dr
             let highlightBorder;
             if(freezeColHighlight&&remainingColHighlight){
                 const borderWidth = freezeColHighlight.rect.width+remainingColHighlight.rect.width -(freezeColHighlight.rect.x+freezeColHighlight.rect.width-remainingColHighlight.rect.x);

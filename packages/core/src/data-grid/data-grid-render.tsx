@@ -1693,8 +1693,8 @@ function drawHighlightRings(
     translateY: number,
     mappedColumns: readonly MappedGridColumn[],
     freezeColumns: number,
-    headerHeight: number,
     groupHeaderLevels: number,
+    headerHeight: number,
     groupHeaderHeight: number,
     rowHeight: number | ((index: number) => number),
     lastRowSticky: boolean,
@@ -1838,32 +1838,32 @@ function drawHighlightRings(
         };
 
         ctx.lineWidth = 1;
-        for (const dr of drawRects) {
-            const [s] = dr;
-            if (
-                s !== undefined &&
-                intersectRect(0, 0, width, height, s.rect.x, s.rect.y, s.rect.width, s.rect.height)
-            ) {
-                setDashed(s.style === "dashed");
-                ctx.strokeStyle = withAlpha(s.color, 1);
-                ctx.strokeRect(s.rect.x + 1, s.rect.y + 1, s.rect.width - 2, s.rect.height - 2);
-            }
-        }
         let clipped = false;
         for (const dr of drawRects) {
-            const [, s] = dr;
+            const [freezeColHighlight,remainingColHighlight]=dr
+            let highlightBorder;
+            if(freezeColHighlight&&remainingColHighlight){
+                const borderWidth = freezeColHighlight.rect.width+remainingColHighlight.rect.width -(freezeColHighlight.rect.x+freezeColHighlight.rect.width-remainingColHighlight.rect.x);
+                highlightBorder = borderWidth<freezeColHighlight.rect.width ? {...freezeColHighlight} : {style:freezeColHighlight.style||remainingColHighlight.style,color:freezeColHighlight.color || remainingColHighlight.color,rect:{x:freezeColHighlight.rect.x,y:freezeColHighlight.rect.y,width:borderWidth,height:freezeColHighlight.rect.height}};
+            }
+            else if(freezeColHighlight){
+                highlightBorder={...freezeColHighlight}
+            }
+            else if(remainingColHighlight){
+                highlightBorder={...remainingColHighlight}
+            }
             if (
-                s !== undefined &&
-                intersectRect(0, 0, width, height, s.rect.x, s.rect.y, s.rect.width, s.rect.height)
+                highlightBorder !== undefined &&
+                intersectRect(0, 0, width, height, highlightBorder.rect.x, highlightBorder.rect.y, highlightBorder.rect.width, highlightBorder.rect.height)
             ) {
-                setDashed(s.style === "dashed");
-                if (!clipped && s.rect.x < stickyWidth) {
+                setDashed(highlightBorder.style === "dashed");
+                if (!freezeColHighlight&& remainingColHighlight&& !clipped && highlightBorder.rect.x < stickyWidth) {
                     ctx.rect(stickyWidth, 0, width, height);
                     ctx.clip();
                     clipped = true;
                 }
-                ctx.strokeStyle = withAlpha(s.color, 1);
-                ctx.strokeRect(s.rect.x + 1, s.rect.y + 1, s.rect.width - 2, s.rect.height - 2);
+                ctx.strokeStyle = withAlpha(highlightBorder.color, 1);
+                ctx.strokeRect(highlightBorder.rect.x + 1, highlightBorder.rect.y + 1, highlightBorder.rect.width-2, highlightBorder.rect.height - 2);
             }
         }
         ctx.restore();

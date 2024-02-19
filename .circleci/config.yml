@@ -1,0 +1,46 @@
+version: 2.1
+defaults: &defaults
+    executor: node18
+executors:
+    node18:
+        docker:
+            - image: cimg/node:20.10.0
+commands:
+    npmbuild:
+        description: 'NPM install any visual editor based on path'
+        parameters:
+            directory:
+                type: string
+                default: ./packages/core
+        steps:
+            - run:
+                  name: 'Install Dependencies'
+                  command: |
+                      npm install && npm run build
+                      cd <<parameters.directory>>
+                      npm publish
+jobs:
+    publish-core:
+        <<: *defaults
+        steps:
+            - checkout
+            - npmbuild:
+                  directory: ./packages/core
+    publish-cells:
+        <<: *defaults
+        steps:
+            - checkout
+            - npmbuild:
+                  directory: ./packages/cells
+    publish-source:
+        <<: *defaults
+        steps:
+            - checkout
+            - npmbuild:
+                  directory: ./packages/source
+
+workflows:
+    version: 2
+    deploy:
+        jobs:
+            - publish-core

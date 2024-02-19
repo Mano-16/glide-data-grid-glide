@@ -51,7 +51,10 @@ export function drawGridHeaders(
         ctx.fillRect(0, 0, width, totalHeaderHeight);
     }
 
-    const [hCol, hRow] = hovered?.[0] ?? [];
+    const hCol = hovered?.[0]?.[0];
+    const hRow = hovered?.[0]?.[1];
+    const hPosX = hovered?.[1]?.[0];
+    const hPosY = hovered?.[1]?.[1];
 
     const font = outerTheme.headerFontFull;
     // Assinging the context font too much can be expensive, it can be worth it to minimze this
@@ -121,6 +124,8 @@ export function drawGridHeaders(
             selected,
             theme,
             hoveredBoolean,
+            hoveredBoolean ? hPosX : undefined,
+            hoveredBoolean ? hPosY : undefined,
             hasSelectedCell,
             hover,
             spriteManager,
@@ -503,6 +508,8 @@ function drawHeaderInner(
     selected: boolean,
     theme: FullTheme,
     isHovered: boolean,
+    posX: number | undefined,
+    posY: number | undefined,
     hoverAmount: number,
     spriteManager: SpriteManager,
     touchMode: boolean,
@@ -621,6 +628,12 @@ function drawHeaderInner(
     if (shouldDrawMenu && headerLayout.menuBounds !== undefined) {
         const menuBounds = headerLayout.menuBounds;
 
+        const hovered = posX !== undefined && posY !== undefined && pointInRect(menuBounds, posX + x, posY + y);
+
+        if (!hovered) {
+            ctx.globalAlpha = 0.7;
+        }
+
         if (c.menuIcon === undefined || c.menuIcon === GridColumnMenuIcon.Triangle) {
             // Draw the default triangle menu icon:
             ctx.beginPath();
@@ -660,6 +673,10 @@ function drawHeaderInner(
             const iconY = menuBounds.y + (menuBounds.height - theme.headerIconSize) / 2;
             spriteManager.drawSprite(c.menuIcon, "normal", ctx, iconX, iconY, theme.headerIconSize, theme);
         }
+
+        if (!hovered) {
+            ctx.globalAlpha = 1;
+        }
     }
 }
 
@@ -673,6 +690,8 @@ export function drawHeader(
     selected: boolean,
     theme: FullTheme,
     isHovered: boolean,
+    posX: number | undefined,
+    posY: number | undefined,
     hasSelectedCell: boolean,
     hoverAmount: number,
     spriteManager: SpriteManager,
@@ -708,6 +727,8 @@ export function drawHeader(
                     selected,
                     theme,
                     isHovered,
+                    posX,
+                    posY,
                     hoverAmount,
                     spriteManager,
                     touchMode,
@@ -726,6 +747,8 @@ export function drawHeader(
             selected,
             theme,
             isHovered,
+            posX,
+            posY,
             hoverAmount,
             spriteManager,
             touchMode,

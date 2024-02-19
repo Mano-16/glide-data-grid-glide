@@ -134,6 +134,7 @@ export function Simplenotest() {
             isResizing={false}
             isDragging={false}
             theme={mergeAndRealizeTheme(getDataEditorTheme())}
+            resizeIndicator={"full"}
         />
     );
 }
@@ -147,6 +148,7 @@ export function SelectedCellnotest() {
             height={1000}
             cellXOffset={0}
             isFocused={true}
+            resizeIndicator="full"
             drawHeader={undefined}
             drawGroup={undefined}
             drawCell={undefined}
@@ -242,6 +244,7 @@ export function SelectedRownotest() {
             cellXOffset={0}
             cellYOffset={0}
             isFocused={true}
+            resizeIndicator="full"
             resizeColumn={undefined}
             drawHeader={undefined}
             drawGroup={undefined}
@@ -331,6 +334,7 @@ export const SelectedColumnnotest = () => {
             cellXOffset={0}
             cellYOffset={0}
             isFocused={true}
+            resizeIndicator="full"
             resizeColumn={undefined}
             drawHeader={undefined}
             drawGroup={undefined}

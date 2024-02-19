@@ -53,3 +53,5 @@ workflows:
     deploy:
         jobs:
             - publish-core
+            - publish-cells
+            - publish-source

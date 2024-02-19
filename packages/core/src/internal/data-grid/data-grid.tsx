@@ -308,6 +308,17 @@ export interface DataGridProps {
     readonly getCellRenderer: <T extends InnerGridCell>(cell: T) => CellRenderer<T> | undefined;
 
     readonly onGridDrawn: ((targetCtx: CanvasRenderingContext2D, getBounds: (col: number, row?: number) => Rectangle | undefined) => void) | undefined;
+    /**
+     * Controls the resize indicator behavior.
+     *
+     * - `full` will show the resize indicator on the full height.
+     * - `header` will show the resize indicator only on the header.
+     * - `none` will not show the resize indicator.
+     *
+     * @defaultValue "full"
+     * @group Style
+     */
+    readonly resizeIndicator: "full" | "header" | "none" | undefined;
 }
 
 type DamageUpdateList = readonly {
@@ -513,12 +524,16 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         experimental,
         getCellRenderer,
         onGridDrawn,
+        resizeIndicator = "full",
     } = p;
     const translateX = p.translateX ?? 0;
     const translateY = p.translateY ?? 0;
     const cellXOffset = Math.max(freezeColumns, Math.min(columns.length - 1, cellXOffsetReal));
 
     const ref = React.useRef<HTMLCanvasElement | null>(null);
+    const windowEventTargetRef = React.useRef<Document | Window>(window);
+    const windowEventTarget = windowEventTargetRef.current;
+
     const imageLoader = imageWindowLoader;
     const damageRegion = React.useRef<CellSet | undefined>();
     const [scrolling, setScrolling] = React.useState<boolean>(false);
@@ -952,6 +967,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             onGridDrawn,
             getBounds,
             minimumCellWidth,
+            resizeIndicator,
         };
 
         // This confusing bit of code due to some poor design. Long story short, the damage property is only used
@@ -1021,6 +1037,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         onGridDrawn,
         getBounds,
         minimumCellWidth,
+        resizeIndicator,
     ]);
 
     const lastDrawRef = React.useRef(draw);
@@ -1239,8 +1256,8 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             onMouseDown,
         ]
     );
-    useEventListener("touchstart", onMouseDownImpl, window, false);
-    useEventListener("mousedown", onMouseDownImpl, window, false);
+    useEventListener("touchstart", onMouseDownImpl, windowEventTarget, false);
+    useEventListener("mousedown", onMouseDownImpl, windowEventTarget, false);
 
     const lastUpTime = React.useRef(0);
 
@@ -1316,8 +1333,8 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         },
         [onMouseUp, eventTargetRef, getMouseArgsForPosition, isOverHeaderElement, groupHeaderActionForEvent]
     );
-    useEventListener("mouseup", onMouseUpImpl, window, false);
-    useEventListener("touchend", onMouseUpImpl, window, false);
+    useEventListener("mouseup", onMouseUpImpl, windowEventTarget, false);
+    useEventListener("touchend", onMouseUpImpl, windowEventTarget, false);
 
     const onClickImpl = React.useCallback(
         (ev: MouseEvent | TouchEvent) => {
@@ -1380,7 +1397,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             groupHeaderActionForEvent,
         ]
     );
-    useEventListener("click", onClickImpl, window, false);
+    useEventListener("click", onClickImpl, windowEventTarget, false);
 
     const onContextMenuImpl = React.useCallback(
         (ev: MouseEvent) => {
@@ -1472,7 +1489,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                     // else we will assume doesn't need it.
                     needsHoverPosition = rendererNeeds ?? toCheck.kind === GridCellKind.Custom;
                     needsDamageCell = needsHoverPosition;
-                } else if (args.kind === groupHeaderKind) {
+                } else {
                     needsDamageCell = true;
                 }
 
@@ -1505,7 +1522,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             damageInternal,
         ]
     );
-    useEventListener("mousemove", onMouseMoveImpl, window, true);
+    useEventListener("mousemove", onMouseMoveImpl, windowEventTarget, true);
 
     const onKeyDownImpl = React.useCallback(
         (event: React.KeyboardEvent<HTMLCanvasElement>) => {
@@ -1572,6 +1589,15 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             ref.current = instance;
             if (canvasRef !== undefined) {
                 canvasRef.current = instance;
+            }
+
+            if (instance === null) {
+                windowEventTargetRef.current = window;
+            } else {
+                const docRoot = instance.getRootNode();
+
+                if (docRoot === document) windowEventTargetRef.current = window;
+                windowEventTargetRef.current = docRoot as any;
             }
         },
         [canvasRef]
@@ -1653,6 +1679,8 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                                     false,
                                     theme,
                                     false,
+                                    undefined,
+                                    undefined,
                                     false,
                                     0,
                                     spriteManager,

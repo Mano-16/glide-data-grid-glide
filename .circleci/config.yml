@@ -4,7 +4,7 @@ defaults: &defaults
 executors:
     node18:
         docker:
-            - image: cimg/node:20.10.0
+            - image: cimg/node:16.16.0
 commands:
     npmbuild:
         description: 'NPM install any visual editor based on path'
@@ -44,3 +44,5 @@ workflows:
     deploy:
         jobs:
             - publish-core
+            - publish-cells
+            - publish-source

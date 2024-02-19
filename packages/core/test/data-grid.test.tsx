@@ -111,6 +111,7 @@ const basicProps: DataGridProps = {
         return AllCellRenderers.find(x => x.kind === cell.kind) as any;
     },
     onGridDrawn: () => undefined,
+    resizeIndicator: "full",
 };
 
 const dataGridCanvasId = "data-grid-canvas";

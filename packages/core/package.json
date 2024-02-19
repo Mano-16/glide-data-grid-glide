@@ -1,6 +1,6 @@
 {
     "name": "@lumel/glide-data-grid",
-    "version": "6.0.4",
+    "version": "6.0.4-alpha3",
     "description": "React data grid for beautifully displaying and editing large amounts of data with amazing performance.",
     "sideEffects": [
         "**/*.css"
@@ -19,11 +19,15 @@
         "./dist/index.css": {
             "import": "./dist/index.css",
             "require": "./dist/index.css"
+        },
+        "./index.css": {
+            "import": "./dist/index.css",
+            "require": "./dist/index.css"
         }
     },
     "scripts": {
         "build": "./build.sh",
-        "lint": "npm run cycle-check && eslint src --ext .ts,.tsx",
+        "lint": "concurrently \"npm run cycle-check\" \"eslint src --ext .ts,.tsx\"",
         "cycle-check": "ts-helper -p ./tsconfig.json -r ./src/index.ts -c",
         "test": "vitest",
         "check-package": "package-check",

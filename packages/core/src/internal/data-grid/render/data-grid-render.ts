@@ -170,6 +170,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         onGridDrawn,
         getBounds,
         drawGroupCallback,
+        resizeIndicator,
     } = arg;
     if (width === 0 || height === 0) return;
     const doubleBuffer = renderStrategy === "double-buffer";
@@ -732,7 +733,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
     highlightRedraw?.();
     focusRedraw?.();
 
-    if (isResizing) {
+    if (isResizing && resizeIndicator !== "none") {
         walkColumns(effectiveCols, 0, translateX, 0, totalHeaderHeight, (c, x) => {
             if (c.sourceIndex === resizeCol) {
                 drawColumnResizeOutline(
@@ -742,13 +743,15 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                     totalHeaderHeight + 1,
                     blend(theme.resizeIndicatorColor ?? theme.accentLight, theme.bgHeader)
                 );
-                drawColumnResizeOutline(
-                    targetCtx,
-                    x + c.width,
-                    totalHeaderHeight,
-                    height,
-                    blend(theme.resizeIndicatorColor ?? theme.accentLight, theme.bgCell)
-                );
+                if (resizeIndicator === "full") {
+                    drawColumnResizeOutline(
+                        targetCtx,
+                        x + c.width,
+                        totalHeaderHeight,
+                        height,
+                        blend(theme.resizeIndicatorColor ?? theme.accentLight, theme.bgCell)
+                    );
+                }
                 return true;
             }
             return false;

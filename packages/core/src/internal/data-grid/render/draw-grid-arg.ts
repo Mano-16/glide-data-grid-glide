@@ -21,7 +21,7 @@ import type { EnqueueCallback } from "../use-animation-queue.js";
 import type { ImageWindowLoader } from "../image-window-loader-interface.js";
 import type { GroupDetailsCallback, GetRowThemeCallback, Highlight } from "./data-grid-render.cells.js";
 
-export type HoverInfo = readonly [Item, Item];
+export type HoverInfo = readonly [Item, readonly [number, number]];
 
 export interface DragAndDropState {
     src: number;
@@ -84,4 +84,5 @@ export interface DrawGridArg {
     readonly getBounds: (col: number, row?: number) => Rectangle | undefined;
     readonly drawGroupCallback: DrawGroupCallback | undefined;
     readonly groupHeaderLevels: number;
+    readonly resizeIndicator: "full" | "header" | "none";
 }

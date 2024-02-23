@@ -86,10 +86,8 @@ import { useRowGroupingInner, type RowGroupingOptions } from "./row-grouping.js"
 import { useRowGrouping } from "./row-grouping-api.js";
 import { useInitialScrollOffset } from "./use-initial-scroll-offset.js";
 import type { VisibleRegion } from "./visible-region.js";
+import  DataGridOverlayEditor  from "../internal/data-grid-overlay-editor/data-grid-overlay-editor.js"
 
-const DataGridOverlayEditor = React.lazy(
-    async () => await import("../internal/data-grid-overlay-editor/data-grid-overlay-editor.js")
-);
 
 // There must be a better way
 let idCounter = 0;
@@ -2568,6 +2566,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             freezeTrailingRows,
             setVisibleRegion,
             onVisibleRegionChanged,
+            scrollRef,
         ]
     );
 

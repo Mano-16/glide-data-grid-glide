@@ -1,8 +1,7 @@
 import type { ArticleCell } from "./article-cell-types.js";
 import * as React from "react";
 import { type CustomRenderer, getMiddleCenterBias, GridCellKind } from "@lumel/glide-data-grid";
-
-const ArticleCellEditor = React.lazy(async () => await import("./article-cell-editor.js"));
+import ArticleCellEditor from "./article-cell-editor.js";
 
 const renderer: CustomRenderer<ArticleCell> = {
     kind: GridCellKind.Custom,

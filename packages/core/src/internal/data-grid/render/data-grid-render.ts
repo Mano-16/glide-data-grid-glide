@@ -171,6 +171,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         getBounds,
         drawGroupCallback,
         resizeIndicator,
+        disableHeaderVerticalBorder = true,
     } = arg;
     if (width === 0 || height === 0) return;
     const doubleBuffer = renderStrategy === "double-buffer";
@@ -297,26 +298,28 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             touchMode
         );
 
-        // drawGridLines(
-        //     overlayCtx,
-        //     effectiveCols,
-        //     cellYOffset,
-        //     translateX,
-        //     translateY,
-        //     width,
-        //     height,
-        //     undefined,
-        //     undefined,
-        //     groupHeaderHeight,
-        //     totalHeaderHeight,
-        //     getRowHeight,
-        //     getRowThemeOverride,
-        //     verticalBorder,
-        //     freezeTrailingRows,
-        //     rows,
-        //     theme,
-        //     true
-        // );
+        if(!disableHeaderVerticalBorder) {
+            drawGridLines(
+                overlayCtx,
+                effectiveCols,
+                cellYOffset,
+                translateX,
+                translateY,
+                width,
+                height,
+                undefined,
+                undefined,
+                groupHeaderHeight,
+                totalHeaderHeight,
+                getRowHeight,
+                getRowThemeOverride,
+                verticalBorder,
+                freezeTrailingRows,
+                rows,
+                theme,
+                true
+            );
+        }
 
         overlayCtx.beginPath();
         overlayCtx.moveTo(0, overlayHeight - 0.5);

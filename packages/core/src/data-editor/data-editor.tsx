@@ -895,6 +895,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         showMinimap,
         resizeIndicator,
         scrollToActiveCell = true,
+        disableHeaderVerticalBorder,
     } = p;
 
     const rowMarkersObj = typeof p.rowMarkers === "string" ? undefined : p.rowMarkers;
@@ -4159,6 +4160,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     scrollableHeight={scrollableHeight}
                     onGridDrawn={onGridDrawn}
                     resizeIndicator={resizeIndicator}
+                    disableHeaderVerticalBorder={disableHeaderVerticalBorder}
                 />
                 {renameGroupNode}
                 {overlay !== undefined && (

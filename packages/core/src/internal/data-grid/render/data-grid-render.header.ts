@@ -74,10 +74,11 @@ export function drawGridHeaders(
                 ? outerTheme
                 : mergeAndRealizeTheme(outerTheme, groupTheme, c.themeOverride);
 
-        if (theme.bgHeader !== outerTheme.bgHeader) {
-            ctx.fillStyle = theme.bgHeader;
-            ctx.fill();
-        }
+        // Commented to prevent overlap drawing
+        // if (theme.bgHeader !== outerTheme.bgHeader) {
+        ctx.fillStyle = theme.bgHeader;
+        ctx.fill();
+        // }
 
         if (theme !== outerTheme) {
             ctx.font = theme.baseFontFull;

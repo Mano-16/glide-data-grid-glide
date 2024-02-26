@@ -441,6 +441,7 @@ const DataGridDnd: React.FunctionComponent<DataGridDndProps> = p => {
             onMouseMoveRaw={onMouseMove}
             ref={gridRef}
             onGridDrawn={p.onGridDrawn}
+            disableHeaderVerticalBorder={p.disableHeaderVerticalBorder}
         />
     );
 };

@@ -85,4 +85,5 @@ export interface DrawGridArg {
     readonly drawGroupCallback: DrawGroupCallback | undefined;
     readonly groupHeaderLevels: number;
     readonly resizeIndicator: "full" | "header" | "none";
+    readonly disableHeaderVerticalBorder: boolean;
 }

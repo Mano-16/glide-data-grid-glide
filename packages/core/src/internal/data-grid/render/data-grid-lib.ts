@@ -45,6 +45,7 @@ export function useMappedColumns(
                     growOffset: c.growOffset,
                     rowMarker: c.rowMarker,
                     rowMarkerChecked: c.rowMarkerChecked,
+                    alwaysShowHeaderCheckbox: c.alwaysShowHeaderCheckbox,
                 })
             ),
         [columns, freezeColumns]

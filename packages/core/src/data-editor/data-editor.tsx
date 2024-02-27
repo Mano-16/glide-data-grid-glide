@@ -98,6 +98,8 @@ export interface RowMarkerOptions {
     startIndex?: number;
     width?: number;
     theme?: Partial<Theme>;
+    alwaysShowHeaderCheckbox?: boolean;
+    onActionClick?: (row: number) => void;
 }
 
 interface MouseState {
@@ -905,6 +907,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const rowMarkerStartIndex = rowMarkersObj?.startIndex ?? p.rowMarkerStartIndex ?? 1;
     const rowMarkerTheme = rowMarkersObj?.theme ?? p.rowMarkerTheme;
     const rowMarkerCheckboxStyle = rowMarkersObj?.checkboxStyle ?? "square";
+    const alwaysShowHeaderCheckbox = rowMarkersObj?.alwaysShowHeaderCheckbox ?? false;
+    const onActionClick = rowMarkersObj?.onActionClick;
 
     const minColumnWidth = Math.max(minColumnWidthIn, 20);
     const maxColumnWidth = Math.max(maxColumnWidthIn, minColumnWidth);
@@ -1146,10 +1150,11 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 themeOverride: rowMarkerTheme,
                 rowMarker: rowMarkerCheckboxStyle,
                 rowMarkerChecked,
+                alwaysShowHeaderCheckbox,
             },
             ...columns,
         ];
-    }, [rowMarkers, columns, rowMarkerWidth, rowMarkerTheme, rowMarkerCheckboxStyle, rowMarkerChecked]);
+    }, [rowMarkers, columns, rowMarkerWidth, rowMarkerTheme, rowMarkerCheckboxStyle, rowMarkerChecked, alwaysShowHeaderCheckbox]);
 
     const visibleRegionRef = React.useRef<VisibleRegion>({
         height: 1,
@@ -1308,6 +1313,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     row: rowMarkerStartIndex + mappedRow,
                     drawHandle: onRowMoved !== undefined,
                     cursor: rowMarkers === "clickable-number" ? "pointer" : undefined,
+                    onActionClick: onActionClick !== undefined ? onActionClick : undefined,
                 };
             } else if (isTrailing) {
                 //If the grid is empty, we will return text
@@ -1378,6 +1384,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             trailingRowOptions?.addIcon,
             experimental?.strict,
             getCellContent,
+            onActionClick,
         ]
     );
 

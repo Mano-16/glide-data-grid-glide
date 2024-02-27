@@ -209,6 +209,7 @@ export type InnerColumnExtension = {
     growOffset?: number;
     rowMarker?: "square" | "circle";
     rowMarkerChecked?: BooleanIndeterminate | boolean;
+    alwaysShowHeaderCheckbox?: boolean | undefined;
 };
 
 /** @category Columns */
@@ -516,6 +517,7 @@ export interface MarkerCell extends BaseGridCell {
     readonly checked: boolean;
     readonly checkboxStyle: "square" | "circle";
     readonly markerKind: "checkbox" | "number" | "both" | "checkbox-visible";
+    readonly onActionClick?: (row: number) => void;
 }
 
 /** @category Selection */

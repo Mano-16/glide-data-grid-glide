@@ -1369,7 +1369,8 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
                                     0,
                                     spriteManager,
                                     drawHeaderCallback,
-                                    false
+                                    false,
+                                    imageLoader
                                 );
                             } else {
                                 ctx.font = `${theme.baseFontStyle} ${theme.fontFamily}`;

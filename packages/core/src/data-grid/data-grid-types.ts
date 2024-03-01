@@ -187,6 +187,7 @@ export type DrawHeaderCallback = (args: {
     hasSelectedCell: boolean;
     spriteManager: SpriteManager;
     menuBounds: Rectangle;
+    imageLoader:ImageWindowLoader;
 }) => boolean;
 
 export type DrawGroupCallback = (args: {
@@ -201,6 +202,7 @@ export type DrawGroupCallback = (args: {
     icon?: string; 
     isHovered: boolean;
     spriteManager: SpriteManager;
+    imageLoader:ImageWindowLoader;
 }) => boolean;
 
 /** @category Cells */

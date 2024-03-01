@@ -528,7 +528,8 @@ function drawGroups(
     // verticalBorder: (col: number) => boolean,
     getGroupDetails: GroupDetailsCallback,
     drawGroupCallback: DrawGroupCallback | undefined,
-    damage: CellList | undefined
+    damage: CellList | undefined,
+    imageLoader:ImageWindowLoader
 ) {
     const [hCol, hRow] = hovered?.[0] ?? [];
     const hGroupLevelIndex = getGroupLevelIndexFromRow(hRow ?? 0, groupHeaderLevels);
@@ -618,7 +619,8 @@ function drawGroups(
                 groupTheme,
                 isHovered,
                 spriteManager,
-                drawGroupCallback
+                drawGroupCallback,
+                imageLoader
             );
         }
 
@@ -686,6 +688,7 @@ export function drawGroup (
     isHovered: boolean,
     spriteManager: SpriteManager,
     drawGroupCallback: DrawGroupCallback | undefined,
+    imageLoader:ImageWindowLoader
 ) {
     if (drawGroupCallback !== undefined && drawGroupCallback({
         ctx,
@@ -698,7 +701,8 @@ export function drawGroup (
         displayName: group?.name,
         icon: group?.icon,
         isHovered,
-        spriteManager
+        spriteManager,
+        imageLoader
     })) {
         return;
     }
@@ -742,7 +746,8 @@ export function drawHeader(
     hoverAmount: number,
     spriteManager: SpriteManager,
     drawHeaderCallback: DrawHeaderCallback | undefined,
-    touchMode: boolean
+    touchMode: boolean,
+    imageLoader:ImageWindowLoader
 ) {
     const isCheckboxHeader = c.title.startsWith(headerCellCheckboxPrefix);
     const isRtl = direction(c.title) === "rtl";
@@ -769,6 +774,7 @@ export function drawHeader(
                 hasSelectedCell,
                 spriteManager,
                 menuBounds,
+                imageLoader
             })
         ) {
             return;
@@ -909,7 +915,8 @@ function drawGridHeaders(
     damage: CellList | undefined,
     drawHeaderCallback: DrawHeaderCallback | undefined,
     drawGroupCallback: DrawGroupCallback | undefined,
-    touchMode: boolean
+    touchMode: boolean,
+    imageLoader:ImageWindowLoader
 ) {
     const totalHeaderHeight = headerHeight + groupHeaderHeight;
     if (totalHeaderHeight <= 0) return;
@@ -999,7 +1006,8 @@ function drawGridHeaders(
             hover,
             spriteManager,
             drawHeaderCallback,
-            touchMode
+            touchMode,
+            imageLoader
         );
         ctx.restore();
     });
@@ -1019,7 +1027,8 @@ function drawGridHeaders(
             // verticalBorder,
             getGroupDetails,
             drawGroupCallback,
-            damage
+            damage,
+            imageLoader
         );
     }
 }
@@ -2350,7 +2359,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             damage,
             drawHeaderCallback,
             drawGroupCallback,
-            touchMode
+            touchMode,
+            imageLoader
         );
 
         // drawGridLines(

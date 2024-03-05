@@ -13,6 +13,9 @@ const rowShift = 1 << 16;
 const imgPool: HTMLImageElement[] = [];
 
 function packColRowToNumber(col: number, row: number) {
+    if(row<0){
+        return (-1*row * rowShift+col)*(-1)
+    }
     return row * rowShift + col;
 }
 
@@ -25,8 +28,11 @@ function unpackRow(packed: number, col: number): number {
 }
 
 function unpackNumberToColRow(packed: number): [number, number] {
-    const col = unpackCol(packed);
+    let col = unpackCol(packed);
     const row = unpackRow(packed, col);
+    if(packed<0){
+        col=col*(-1)
+    }
     return [col, row];
 }
 
@@ -44,11 +50,14 @@ class ImageWindowLoaderImpl implements ImageWindowLoader {
     private freezeCols: number = 0;
 
     private isInWindow = (packed: number) => {
-        const col = unpackCol(packed);
+        let col = unpackCol(packed);
         const row = unpackRow(packed, col);
+        if(packed<0){
+            col=col*(-1)
+        }
         const w = this.visibleWindow;
         if (col < this.freezeCols && row >= w.y && row <= w.y + w.height) return true;
-        return col >= w.x && col <= w.x + w.width && row >= w.y && row <= w.y + w.height;
+        return packed>0 ?(col >= w.x && col <= w.x + w.width && row >= w.y && row <= w.y + w.height):(col >= w.x && col <= w.x + w.width && Math.abs(row) >= w.y && row <= w.y + w.height);
     };
 
     private cache: Record<string, LoadResult> = {};

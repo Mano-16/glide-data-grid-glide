@@ -207,7 +207,7 @@ export type GridColumn = SizedGridColumn | AutoGridColumn;
 
 export type InnerColumnExtension = {
     growOffset?: number;
-    rowMarker?: "square" | "circle";
+    rowMarker?: "square" | "circle" | "thin-square";
     rowMarkerChecked?: BooleanIndeterminate | boolean;
     alwaysShowHeaderCheckbox?: boolean | undefined;
 };
@@ -515,7 +515,7 @@ export interface MarkerCell extends BaseGridCell {
     readonly row: number;
     readonly drawHandle: boolean;
     readonly checked: boolean;
-    readonly checkboxStyle: "square" | "circle";
+    readonly checkboxStyle: "square" | "circle" | "thin-square";
     readonly markerKind: "checkbox" | "number" | "both" | "checkbox-visible";
     readonly onActionClick?: (row: number) => void;
 }

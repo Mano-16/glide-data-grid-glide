@@ -17,7 +17,7 @@ export function drawCheckbox(
     hoverY: number = -20,
     maxSize: number = 32,
     alignment: BaseGridCell["contentAlign"] = "center",
-    style: "circle" | "square" = "square"
+    style: "circle" | "square" | "thin-square" = "square"
 ) {
     const centerY = Math.floor(y + height / 2);
     const rectBordRadius = style === "circle" ? 10_000 : theme.roundingRadius ?? 4;
@@ -64,7 +64,7 @@ export function drawCheckbox(
             ctx.strokeStyle = theme.bgCell;
             ctx.lineJoin = "round";
             ctx.lineCap = "round";
-            ctx.lineWidth = 1.9;
+            ctx.lineWidth = style === "thin-square" ? 1 : 1.9;
             ctx.stroke();
             break;
         }
@@ -91,28 +91,47 @@ export function drawCheckbox(
             ctx.beginPath();
             roundedRect(
                 ctx,
-                posX - checkBoxWidth / 2,
-                centerY - checkBoxWidth / 2,
-                checkBoxWidth,
-                checkBoxWidth,
+                posX - checkBoxWidth / 2 + 0.5,
+                centerY - checkBoxWidth / 2 + 0.5,
+                checkBoxWidth - 1,
+                checkBoxWidth - 1,
                 rectBordRadius
             );
 
-            ctx.fillStyle = hovered ? theme.textMedium : theme.textLight;
-            ctx.fill();
+            if (style === "thin-square") {
+                ctx.strokeStyle = hovered ? theme.textMedium : theme.textLight;
+                ctx.stroke();
 
-            if (style === "circle") {
-                checkBoxHalfWidth *= 0.8;
-                checkBoxWidth *= 0.8;
+                const offset = 4;
+                ctx.beginPath();
+                roundedRect(
+                    ctx,
+                    posX - checkBoxWidth / 2 + offset / 2,
+                    centerY - checkBoxWidth / 2 + offset / 2,
+                    checkBoxWidth - offset,
+                    checkBoxWidth - offset,
+                    rectBordRadius
+                );
+                ctx.fillStyle = highlighted ? theme.accentColor : theme.textMedium;
+                ctx.fill();
+            } else {
+                ctx.fillStyle = highlighted ? theme.accentColor : theme.textMedium;
+                ctx.fill();
+
+                if (style === "circle") {
+                    checkBoxHalfWidth *= 0.8;
+                    checkBoxWidth *= 0.8;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(posX - checkBoxWidth / 3 + 1, centerY);
+                ctx.lineTo(posX + checkBoxWidth / 3 - 1, centerY);
+                ctx.strokeStyle = theme.bgCell;
+                ctx.lineCap = "round";
+                ctx.lineWidth = 1.9;
+                ctx.stroke();
             }
 
-            ctx.beginPath();
-            ctx.moveTo(posX - checkBoxWidth / 3, centerY);
-            ctx.lineTo(posX + checkBoxWidth / 3, centerY);
-            ctx.strokeStyle = theme.bgCell;
-            ctx.lineCap = "round";
-            ctx.lineWidth = 1.9;
-            ctx.stroke();
             break;
         }
 

@@ -547,7 +547,7 @@ function drawHeaderInner(
             y,
             width,
             height,
-            false,
+            true,
             undefined,
             undefined,
             12,

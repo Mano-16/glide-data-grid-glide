@@ -94,7 +94,7 @@ let idCounter = 0;
 
 export interface RowMarkerOptions {
     kind: "checkbox" | "number" | "clickable-number" | "checkbox-visible" | "both" | "none";
-    checkboxStyle?: "circle" | "square";
+    checkboxStyle?: "circle" | "square" | "thin-square";
     startIndex?: number;
     width?: number;
     theme?: Partial<Theme>;

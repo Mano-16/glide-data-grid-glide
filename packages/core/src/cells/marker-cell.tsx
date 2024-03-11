@@ -136,7 +136,7 @@ function drawMarkerRowCellWithAction(
     checked: boolean,
     markerKind: "checkbox" | "both" | "number" | "checkbox-visible",
     onActionClick: RowMarkerOptions["onActionClick"] | undefined,
-    style: "circle" | "square"
+    style: "circle" | "square" | "thin-square"
 ) {
     const { ctx, rect, hoverAmount, theme } = args;
     const cellHorizontalPadding = 4;

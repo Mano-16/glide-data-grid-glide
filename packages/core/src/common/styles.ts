@@ -94,6 +94,7 @@ export interface Theme {
     horizontalBorderColor?: string;
     headerBottomBorderColor?: string;
     roundingRadius?: number;
+    rowHovered?: boolean | undefined;
 }
 
 const dataEditorBaseTheme: Theme = {

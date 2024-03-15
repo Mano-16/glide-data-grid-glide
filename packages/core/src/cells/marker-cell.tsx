@@ -138,7 +138,8 @@ function drawMarkerRowCellWithAction(
     onActionClick: RowMarkerOptions["onActionClick"] | undefined,
     style: "circle" | "square" | "thin-square"
 ) {
-    const { ctx, rect, hoverAmount, theme } = args;
+    const { ctx, rect, theme } = args;
+    const hoverAmount = theme.rowHovered === true ? 1: args.hoverAmount;
     const cellHorizontalPadding = 4;
     const { x, y, width, height } = rect;
     const checkedboxAlpha = 1;
@@ -160,10 +161,10 @@ function drawMarkerRowCellWithAction(
             style
         );
         // if (drawHandle) {
-        const centerWidth = (width - cellHorizontalPadding - 4) / 2;
+        const centerWidth = (width - cellHorizontalPadding - 7) / 2;
         ctx.globalAlpha = hoverAmount;
         ctx.beginPath();
-        for (const xOffset of [centerWidth, centerWidth + 3]) {
+        for (const xOffset of [centerWidth, centerWidth + 4]) {
             for (const yOffset of [-5, -1, 3]) {
                 ctx.rect(x + xOffset, y + height / 2 + yOffset, 2, 2);
             }

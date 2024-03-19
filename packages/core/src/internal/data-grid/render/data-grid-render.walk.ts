@@ -149,6 +149,24 @@ export function walkGroups(
     }
 }
 
+export function getRowSpanBounds(
+    rowSpan: Item,
+    cellX: number,
+    cellY: number,
+    cellW: number, 
+    rowHeight: number
+): Rectangle | undefined {
+    const [startRow, endRow] = rowSpan;
+    const totalSpannedRows = endRow - startRow;
+    const contentRect: Rectangle | undefined = {
+        x: cellX,
+        y: cellY,
+        width: cellW,
+        height: (totalSpannedRows + 1) * rowHeight,
+    }
+    return contentRect;
+}
+
 export function getSpanBounds(
     span: Item,
     cellX: number,

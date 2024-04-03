@@ -51,6 +51,7 @@ export type DrawHeaderCallback = (
         hasSelectedCell: boolean;
         spriteManager: SpriteManager;
         menuBounds: Rectangle;
+        imageLoader:ImageWindowLoader;
     },
     drawContent: () => void
 ) => void;
@@ -85,6 +86,7 @@ export type DrawGroupCallback = (args: {
     icon?: string; 
     isHovered: boolean;
     spriteManager: SpriteManager;
+    imageLoader:ImageWindowLoader;
 }) => boolean;
 
 /** @category Cells */

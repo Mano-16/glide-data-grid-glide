@@ -100,6 +100,8 @@ export interface RowMarkerOptions {
     theme?: Partial<Theme>;
     alwaysShowHeaderCheckbox?: boolean;
     onActionClick?: (row: number) => void;
+    headerTheme?: Partial<Theme>;
+    headerAlwaysVisible?: boolean;
 }
 
 interface MouseState {
@@ -118,6 +120,7 @@ type Props = Partial<
         | "clientSize"
         | "columns"
         | "disabledRows"
+        | "drawFocusRing"
         | "enableGroups"
         | "firstColAccessible"
         | "firstColSticky"
@@ -405,6 +408,12 @@ export interface DataEditorProps extends Props, Pick<DataGridSearchProps, "image
      * @defaultValue `multi`
      */
     readonly rowSelect?: "none" | "single" | "multi";
+
+    /** Controls if range selection is allowed to span columns.
+     * @group Selection
+     * @defaultValue `true`
+     */
+    readonly rangeSelectionColumnSpanning?: boolean;
 
     /** Sets the initial scroll Y offset.
      * @see {@link scrollOffsetX}
@@ -696,6 +705,8 @@ export interface DataEditorProps extends Props, Pick<DataGridSearchProps, "image
      * If set to true, the data grid will attempt to scroll to keep the selction in view
      */
     readonly scrollToActiveCell?: boolean;
+
+    readonly drawFocusRing?: boolean | "no-editor";
 }
 
 type ScrollToFn = (
@@ -799,6 +810,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         editorBloom,
         onHeaderClicked,
         onColumnProposeMove,
+        rangeSelectionColumnSpanning = true,
         spanRangeBehavior = "default",
         onGroupHeaderClicked,
         onCellContextMenu,
@@ -863,7 +875,6 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         onColumnResizeStart: onColumnResizeStartIn,
         customRenderers: additionalRenderers,
         fillHandle,
-        drawFocusRing = true,
         experimental,
         fixedShadowX,
         fixedShadowY,
@@ -898,7 +909,10 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         resizeIndicator,
         scrollToActiveCell = true,
         disableHeaderVerticalBorder,
+        drawFocusRing: drawFocusRingIn = true,
     } = p;
+
+    const drawFocusRing = drawFocusRingIn === "no-editor" ? overlay === undefined : drawFocusRingIn;
 
     const rowMarkersObj = typeof p.rowMarkers === "string" ? undefined : p.rowMarkers;
 
@@ -906,6 +920,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const rowMarkerWidthRaw = rowMarkersObj?.width ?? p.rowMarkerWidth;
     const rowMarkerStartIndex = rowMarkersObj?.startIndex ?? p.rowMarkerStartIndex ?? 1;
     const rowMarkerTheme = rowMarkersObj?.theme ?? p.rowMarkerTheme;
+    const headerRowMarkerTheme = rowMarkersObj?.headerTheme;
+    const headerRowMarkerAlwaysVisible = rowMarkersObj?.headerAlwaysVisible;
     const rowMarkerCheckboxStyle = rowMarkersObj?.checkboxStyle ?? "square";
     const alwaysShowHeaderCheckbox = rowMarkersObj?.alwaysShowHeaderCheckbox ?? false;
     const onActionClick = rowMarkersObj?.onActionClick;
@@ -1086,7 +1102,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         rangeSelectionBlending,
         columnSelectionBlending,
         rowSelectionBlending,
-        rangeSelect
+        rangeSelect,
+        rangeSelectionColumnSpanning
     );
 
     const mergedTheme = React.useMemo(() => {
@@ -1150,11 +1167,23 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 themeOverride: rowMarkerTheme,
                 rowMarker: rowMarkerCheckboxStyle,
                 rowMarkerChecked,
-                alwaysShowHeaderCheckbox,
+                headerRowMarkerTheme,
+                headerRowMarkerAlwaysVisible,
+                alwaysShowHeaderCheckbox
             },
             ...columns,
         ];
-    }, [rowMarkers, columns, rowMarkerWidth, rowMarkerTheme, rowMarkerCheckboxStyle, rowMarkerChecked, alwaysShowHeaderCheckbox]);
+    }, [
+        rowMarkers,
+        columns,
+        rowMarkerWidth,
+        rowMarkerTheme,
+        rowMarkerCheckboxStyle,
+        rowMarkerChecked,
+        headerRowMarkerTheme,
+        headerRowMarkerAlwaysVisible,
+        alwaysShowHeaderCheckbox,
+    ]);
 
     const visibleRegionRef = React.useRef<VisibleRegion>({
         height: 1,

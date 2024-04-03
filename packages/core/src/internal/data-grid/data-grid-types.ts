@@ -210,6 +210,8 @@ export type InnerColumnExtension = {
     rowMarker?: "square" | "circle" | "thin-square";
     rowMarkerChecked?: BooleanIndeterminate | boolean;
     alwaysShowHeaderCheckbox?: boolean | undefined;
+    headerRowMarkerTheme?: Partial<Theme>;
+    headerRowMarkerAlwaysVisible?: boolean;
 };
 
 /** @category Columns */
@@ -343,6 +345,11 @@ export interface ProtectedCell extends BaseGridCell {
     readonly kind: GridCellKind.Protected;
 }
 
+export interface HoverEffectTheme {
+    bgColor: string;
+    fullSize: boolean;
+}
+
 /** @category Cells */
 export interface TextCell extends BaseGridCell {
     readonly kind: GridCellKind.Text;
@@ -352,6 +359,7 @@ export interface TextCell extends BaseGridCell {
     readonly allowWrapping?: boolean;
     readonly underline?: boolean | { enabled: boolean, color?: string };
     readonly hoverEffect?: boolean;
+    readonly hoverEffectTheme?: HoverEffectTheme;
 }
 
 /** @category Cells */
@@ -365,6 +373,8 @@ export interface NumberCell extends BaseGridCell {
     readonly allowNegative?: boolean;
     readonly thousandSeparator?: boolean | string;
     readonly decimalSeparator?: string;
+    readonly hoverEffect?: boolean;
+    readonly hoverEffectTheme?: HoverEffectTheme;
 }
 
 /** @category Cells */
@@ -460,6 +470,7 @@ export interface BooleanCell extends BaseGridCell {
     readonly readonly?: boolean;
     readonly allowOverlay: false;
     readonly maxSize?: number;
+    readonly hoverEffectIntensity?: number;
 }
 
 // Can be written more concisely, not easier to read if more concise.

@@ -46,6 +46,8 @@ export function useMappedColumns(
                     rowMarker: c.rowMarker,
                     rowMarkerChecked: c.rowMarkerChecked,
                     alwaysShowHeaderCheckbox: c.alwaysShowHeaderCheckbox,
+                    headerRowMarkerTheme: c.headerRowMarkerTheme,
+                    headerRowMarkerAlwaysVisible: c.headerRowMarkerAlwaysVisible,
                 })
             ),
         [columns, freezeColumns]

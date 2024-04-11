@@ -295,7 +295,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             damage,
             drawHeaderCallback,
             drawGroupCallback,
-            touchMode
+            touchMode,
+            imageLoader
         );
 
         if(!disableHeaderVerticalBorder) {

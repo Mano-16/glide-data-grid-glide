@@ -4,15 +4,24 @@ import { drawTextCell, prepTextCell } from "../internal/data-grid/render/data-gr
 import { GridCellKind, type NumberCell } from "../internal/data-grid/data-grid-types.js";
 import type { InternalCellRenderer } from "./cell-types.js";
 import NumberOverlayEditor  from "../internal/data-grid-overlay-editor/private/number-overlay-editor.js";
+import { drawEditHoverIndicator } from "../internal/data-grid/render/draw-edit-hover-indicator.js";
 
 export const numberCellRenderer: InternalCellRenderer<NumberCell> = {
     getAccessibilityString: c => c.data?.toString() ?? "",
     kind: GridCellKind.Number,
-    needsHover: false,
+    needsHover: cell => cell.hoverEffect === true,
     needsHoverPosition: false,
     useLabel: true,
     drawPrep: prepTextCell,
-    draw: a => drawTextCell(a, a.cell.displayData, a.cell.contentAlign),
+    draw: a => {
+        const { hoverAmount, cell, ctx, theme, rect, overrideCursor } = a;
+        const { hoverEffect, displayData, hoverEffectTheme } = cell;
+
+        if (hoverEffect === true && hoverAmount > 0) {
+            drawEditHoverIndicator(ctx, theme, hoverEffectTheme, displayData, rect, hoverAmount, overrideCursor);
+        }
+        drawTextCell(a, a.cell.displayData, a.cell.contentAlign);
+    },
     measure: (ctx, cell, theme) => ctx.measureText(cell.displayData).width + theme.cellHorizontalPadding * 2,
     onDelete: c => ({
         ...c,

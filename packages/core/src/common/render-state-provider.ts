@@ -10,6 +10,10 @@ import { deepEqual } from "./support.js";
 const rowShift = 1 << 21;
 
 export function packColRowToNumber(col: number, row: number) {
+    if(row<0){
+        //calculated unpacked value for groups(Where the row value is less than 0).
+        return (-1 * row * rowShift + col) * (-1)
+    }
     return (row + 2) * rowShift + col;
 }
 
@@ -22,8 +26,12 @@ export function unpackRow(packed: number): number {
 }
 
 export function unpackNumberToColRow(packed: number): [number, number] {
-    const col = unpackCol(packed);
+    let col = unpackCol(packed);
     const row = unpackRow(packed);
+    if(packed < 0){
+        //column will be recalculated where the unpacked value is negative (for groups).
+        col = col * (-1)
+    }
     return [col, row];
 }
 
@@ -39,11 +47,19 @@ export abstract class WindowingTrackerBase {
     public freezeRows: number[] = [];
 
     protected isInWindow = (packed: number) => {
-        const col = unpackCol(packed);
+        let col = unpackCol(packed);
         const row = unpackRow(packed);
+        if(packed < 0){
+            col = col * (-1)
+        }
         const w = this.visibleWindow;
         const colInWindow = (col >= w.x && col <= w.x + w.width) || col < this.freezeCols;
         const rowInWindow = (row >= w.y && row <= w.y + w.height) || this.freezeRows.includes(row);
+        
+        if (packed < 0) {
+            return (col >= w.x && col <= w.x + w.width && Math.abs(row) >= w.y && row <= w.y + w.height);
+            //w.y should not be less than 0. but row will be less than zero for groups. to make return true added Math.abs()
+        }
         return colInWindow && rowInWindow;
     };
 

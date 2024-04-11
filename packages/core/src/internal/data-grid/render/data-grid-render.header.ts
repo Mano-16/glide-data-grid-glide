@@ -25,6 +25,7 @@ import type { GroupDetails, GroupDetailsCallback } from "./data-grid-render.cell
 import { walkColumns, walkGroups } from "./data-grid-render.walk.js";
 import { drawCheckbox } from "./draw-checkbox.js";
 import type { DragAndDropState, HoverInfo } from "./draw-grid-arg.js";
+import type { ImageWindowLoader } from "../image-window-loader-interface.js";
 
 export function drawGridHeaders(
     ctx: CanvasRenderingContext2D,
@@ -47,7 +48,8 @@ export function drawGridHeaders(
     damage: CellSet | undefined,
     drawHeaderCallback: DrawHeaderCallback | undefined,
     drawGroupCallback: DrawGroupCallback | undefined,
-    touchMode: boolean
+    touchMode: boolean,
+    imageLoader:ImageWindowLoader
 ) {
     const totalHeaderHeight = headerHeight + groupHeaderHeight;
     if (totalHeaderHeight <= 0) return;
@@ -138,7 +140,8 @@ export function drawGridHeaders(
             hover,
             spriteManager,
             drawHeaderCallback,
-            touchMode
+            touchMode,
+            imageLoader
         );
         ctx.restore();
     });
@@ -158,7 +161,8 @@ export function drawGridHeaders(
             // verticalBorder,
             getGroupDetails,
             drawGroupCallback,
-            damage
+            damage,
+            imageLoader,
         );
     }
 }
@@ -177,7 +181,8 @@ export function drawGroups(
     // verticalBorder: (col: number) => boolean,
     getGroupDetails: GroupDetailsCallback,
     drawGroupCallback: DrawGroupCallback | undefined,
-    damage: CellSet | undefined
+    damage: CellSet | undefined,
+    imageLoader:ImageWindowLoader
 ) {
     // const xPad = 8;
     const [hCol, hRow] = hovered?.[0] ?? [];
@@ -303,7 +308,8 @@ export function drawGroups(
                     groupTheme,
                     isHovered,
                     spriteManager,
-                    drawGroupCallback
+                    drawGroupCallback,
+                    imageLoader,
                 );
             }
 
@@ -348,7 +354,8 @@ export function drawGroup(
     groupTheme: FullTheme,
     isHovered: boolean,
     spriteManager: SpriteManager,
-    drawGroupCallback: DrawGroupCallback | undefined
+    drawGroupCallback: DrawGroupCallback | undefined,
+    imageLoader:ImageWindowLoader
 ) {
     if (
         drawGroupCallback !== undefined &&
@@ -364,6 +371,7 @@ export function drawGroup(
             icon: group?.icon,
             isHovered,
             spriteManager,
+            imageLoader,
         })
     ) {
         return;
@@ -534,14 +542,16 @@ function drawHeaderInner(
     if (c.rowMarker !== undefined) {
         const checked = c.rowMarkerChecked;
         const alwaysShowHeaderCheckbox = c.alwaysShowHeaderCheckbox ?? false;
-        if (alwaysShowHeaderCheckbox) {
+        if (alwaysShowHeaderCheckbox || c.headerRowMarkerAlwaysVisible === true) {
             ctx.globalAlpha = 1;
         } else if (checked !== true) {
             ctx.globalAlpha = hoverAmount;
         }
+        const markerTheme =
+            c.headerRowMarkerTheme !== undefined ? mergeAndRealizeTheme(theme, c.headerRowMarkerTheme) : theme;
         drawCheckbox(
             ctx,
-            { ...theme, cellHorizontalPadding: 4 },
+            { ...markerTheme, cellHorizontalPadding: 4 },
             checked,
             x,
             y,
@@ -728,7 +738,8 @@ export function drawHeader(
     hoverAmount: number,
     spriteManager: SpriteManager,
     drawHeaderCallback: DrawHeaderCallback | undefined,
-    touchMode: boolean
+    touchMode: boolean,
+    imageLoader:ImageWindowLoader
 ) {
     const isRtl = direction(c.title) === "rtl";
     const headerLayout = computeHeaderLayout(ctx, c, x, y, width, height, theme, isRtl);
@@ -747,6 +758,7 @@ export function drawHeader(
                 hasSelectedCell,
                 spriteManager,
                 menuBounds: headerLayout?.menuBounds ?? { x: 0, y: 0, height: 0, width: 0 },
+                imageLoader
             },
             () =>
                 drawHeaderInner(

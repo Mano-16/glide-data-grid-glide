@@ -628,6 +628,15 @@ function getColumnsForCellTypes(): GridColumnWithMockingInfo[] {
                     data: name,
                     displayData: name,
                     allowOverlay: true,
+                    hoverEffect: true,
+                    themeOverride: {
+                        cellVerticalPadding: 8,
+                        cellHorizontalPadding: 8,
+                    },
+                    hoverEffectTheme: {
+                        bgColor: "#f4f4f4",
+                        fullSize: true,
+                    },
                 };
             },
         },
@@ -643,6 +652,15 @@ function getColumnsForCellTypes(): GridColumnWithMockingInfo[] {
                     data: age,
                     displayData: `${age}`,
                     allowOverlay: true,
+                    hoverEffect: true,
+                    themeOverride: {
+                        cellVerticalPadding: 8,
+                        cellHorizontalPadding: 8,
+                    },
+                    hoverEffectTheme: {
+                        bgColor: "#f4f4f4",
+                        fullSize: true,
+                    },
                 };
             },
         },
@@ -688,6 +706,10 @@ function getColumnsForCellTypes(): GridColumnWithMockingInfo[] {
                     kind: GridCellKind.Uri,
                     data: url,
                     allowOverlay: true,
+                    hoverEffect: true,
+                    onClickUri: () => {
+                        window.open(url, "_blank");
+                    },
                 };
             },
         },

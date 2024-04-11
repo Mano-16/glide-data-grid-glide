@@ -250,7 +250,6 @@ export function drawFillHandle(
                     if (row !== targetRow && row !== fillHandleRow) return;
 
                     let cellX = drawX;
-                    let cellY = drawY;
                     let cellWidth = col.width;
                     let cellHeight = rh;
 
@@ -258,7 +257,6 @@ export function drawFillHandle(
                         const area = getRowSpanBounds(cell.rowSpan, drawX, drawY, col.width, rh);
 
                         if (area !== undefined) {
-                            cellY = area.y
                             cellHeight = area.height;
                         }
                     }

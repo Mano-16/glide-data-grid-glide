@@ -45,12 +45,12 @@ export const SpanCell: React.VFC = () => {
     const mangledGetCellContent = React.useCallback<typeof getCellContent>(
         cell => {
             const [col, row] = cell;
-            if (col === 0 && row >= 2 && row <= 11) {
+            if (col === 0 && row >= 2 && row <= 6) {
                 return {
                     kind: GridCellKind.Text,
                     allowOverlay: false,
                     data: "Row Span span",
-                    rowSpan: [2, 11],
+                    rowSpan: [2, 6],
                     displayData: "we want to clip each cell individually rather than form a super clip region",
                 }
             }
@@ -90,8 +90,9 @@ export const SpanCell: React.VFC = () => {
             getCellContent={mangledGetCellContent}
             getCellsForSelection={getCellsForSelection}
             columns={cols}
-            // freezeColumns={2}
-            rows={20}
+            freezeColumns={2}
+            rows={300}
+            rowMarkers="both"
         />
     );
 };

@@ -154,15 +154,28 @@ export function getRowSpanBounds(
     cellX: number,
     cellY: number,
     cellW: number, 
-    rowHeight: number
+    row: number,
+    getRowHeight: (row: number) => number,
 ): Rectangle | undefined {
     const [startRow, endRow] = rowSpan;
     const totalSpannedRows = endRow - startRow;
+    let tempY = cellY;
+    let tempH = totalSpannedRows * 34;
+    if (getRowHeight !== undefined) {
+        tempH = getRowHeight(row);
+        for (let x = row - 1; x >= startRow; x--) {
+            tempY -= getRowHeight(x);
+            tempH += getRowHeight(x);
+        }
+        for (let x = row + 1; x <= endRow; x++) {
+            tempH += getRowHeight(x);
+        }
+    }
     const contentRect: Rectangle | undefined = {
         x: cellX,
-        y: cellY,
+        y: tempY,
         width: cellW,
-        height: (totalSpannedRows + 1) * rowHeight,
+        height: tempH,
     }
     return contentRect;
 }
@@ -180,7 +193,6 @@ export function getSpanBounds(
 
     let frozenRect: Rectangle | undefined;
     let contentRect: Rectangle | undefined;
-
     const firstNonSticky = allColumns.find(x => !x.sticky)?.sourceIndex ?? 0;
     if (endCol > firstNonSticky) {
         const renderFromCol = Math.max(startCol, firstNonSticky);

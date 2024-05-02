@@ -233,11 +233,9 @@ export function drawCells(
                         const spanKey = `${c.sourceIndex - 1},${start},${end}`;
                         if (handledRowSpans === undefined) handledRowSpans = new Set();
                         if (!handledRowSpans.has(spanKey)) {
-                            const area = getRowSpanBounds(cell?.rowSpan as Item, drawX, drawY, c.width, rh);
+                            const area = getRowSpanBounds(cell?.rowSpan as Item, drawX, drawY, c.width, row, getRowHeight);
                             if (area !== undefined) {
-                                cellX = area.x;
                                 cellY = area.y;
-                                cellWidth = area.width;
                                 cellHeight = area.height;
                                 handledRowSpans.add(spanKey);
                                 ctx.restore();
@@ -450,7 +448,7 @@ export function drawCells(
                             isLastColumn,
                             isLastRow,
                             cellX,
-                            drawY,
+                            cellY,
                             cellWidth,
                             cellHeight,
                             accentCount > 0,

@@ -49,7 +49,7 @@ export const SpanCell: React.VFC = () => {
                 return {
                     kind: GridCellKind.Text,
                     allowOverlay: false,
-                    data: "Row Span span",
+                    data: "Row Span",
                     rowSpan: [2, 6],
                     displayData: "we want to clip each cell individually rather than form a super clip region",
                 }

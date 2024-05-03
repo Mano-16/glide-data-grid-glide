@@ -552,6 +552,7 @@ const DataGridSearch: React.FunctionComponent<DataGridSearchProps> = p => {
                 showMinimap={p.showMinimap}
                 resizeIndicator={p.resizeIndicator}
                 disableHeaderVerticalBorder={p.disableHeaderVerticalBorder}
+                fillHandleTheme={p.fillHandleTheme}
             />
             {searchbox}
         </>

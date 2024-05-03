@@ -1,6 +1,6 @@
 import type { GetCellRendererCallback } from "../../../cells/cell-types.js";
 import type { RenderStateProvider } from "../../../common/render-state-provider.js";
-import type { FullTheme } from "../../../common/styles.js";
+import type { FillHandleTheme, FullTheme } from "../../../common/styles.js";
 import type { HoverValues } from "../animation-manager.js";
 import type { MappedGridColumn } from "./data-grid-lib.js";
 import type { BlitData } from "./data-grid-render.blit.js";
@@ -86,4 +86,5 @@ export interface DrawGridArg {
     readonly groupHeaderLevels: number;
     readonly resizeIndicator: "full" | "header" | "none";
     readonly disableHeaderVerticalBorder: boolean;
+    readonly fillHandleTheme: FillHandleTheme;
 }

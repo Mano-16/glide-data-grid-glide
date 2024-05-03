@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { FullTheme } from "../../common/styles.js";
+import type { FillHandleTheme, FullTheme } from "../../common/styles.js";
 import {
     computeBounds,
     getColumnIndexForX,
@@ -151,6 +151,8 @@ export interface DataGridProps {
      * @group Editing
      */
     readonly fillHandle: boolean | undefined;
+
+    readonly fillHandleTheme: FillHandleTheme | undefined;
 
     readonly disabledRows: CompactSelection | undefined;
     /**
@@ -528,6 +530,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         onGridDrawn,
         resizeIndicator = "full",
         disableHeaderVerticalBorder = true,
+        fillHandleTheme,
     } = p;
     const translateX = p.translateX ?? 0;
     const translateY = p.translateY ?? 0;
@@ -972,6 +975,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             minimumCellWidth,
             resizeIndicator,
             disableHeaderVerticalBorder,
+            fillHandleTheme: fillHandleTheme ?? { size: 4 },
         };
 
         // This confusing bit of code due to some poor design. Long story short, the damage property is only used
@@ -1043,6 +1047,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
         minimumCellWidth,
         resizeIndicator,
         disableHeaderVerticalBorder,
+        fillHandleTheme,
     ]);
 
     const lastDrawRef = React.useRef(draw);

@@ -910,6 +910,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         scrollToActiveCell = true,
         disableHeaderVerticalBorder,
         drawFocusRing: drawFocusRingIn = true,
+        fillHandleTheme,
     } = p;
 
     const drawFocusRing = drawFocusRingIn === "no-editor" ? overlay === undefined : drawFocusRingIn;
@@ -4197,6 +4198,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     onGridDrawn={onGridDrawn}
                     resizeIndicator={resizeIndicator}
                     disableHeaderVerticalBorder={disableHeaderVerticalBorder}
+                    fillHandleTheme={fillHandleTheme}
                 />
                 {renameGroupNode}
                 {overlay !== undefined && (

@@ -155,6 +155,12 @@ export interface FullTheme extends Theme {
     markerFontFull: string;
 }
 
+export interface FillHandleTheme {
+    color?: string;
+    size?: number;
+    drawMode?: 'inside' | 'overlap';
+}
+
 /** @category Theme */
 export function getDataEditorTheme(): Theme {
     return dataEditorBaseTheme;

@@ -2,7 +2,7 @@
 /* eslint-disable unicorn/no-for-loop */
 import { type Rectangle } from "../data-grid-types.js";
 import { CellSet } from "../cell-set.js";
-import { getEffectiveColumns, type MappedGridColumn, rectBottomRight } from "./data-grid-lib.js";
+import { getEffectiveColumns, type MappedGridColumn } from "./data-grid-lib.js";
 import { blend } from "../color-parser.js";
 import { assert } from "../../../common/support.js";
 import type { DrawGridArg } from "./draw-grid-arg.js";
@@ -172,6 +172,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
         drawGroupCallback,
         resizeIndicator,
         disableHeaderVerticalBorder = true,
+        fillHandleTheme,
     } = arg;
     if (width === 0 || height === 0) return;
     const doubleBuffer = renderStrategy === "double-buffer";
@@ -371,7 +372,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                 freezeTrailingRows,
                 hasAppendRow,
                 fillHandle,
-                rows
+                rows,
+                fillHandleTheme
             );
         }
     };
@@ -457,8 +459,7 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
             if (
                 fillHandle &&
                 drawFocus &&
-                selectionCurrent !== undefined &&
-                damage.has(rectBottomRight(selectionCurrent.range))
+                selectionCurrent !== undefined
             ) {
                 drawFillHandle(
                     ctx,
@@ -477,7 +478,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
                     freezeTrailingRows,
                     hasAppendRow,
                     fillHandle,
-                    rows
+                    rows,
+                    fillHandleTheme
                 );
             }
         };
@@ -619,7 +621,8 @@ export function drawGrid(arg: DrawGridArg, lastArg: DrawGridArg | undefined) {
               freezeTrailingRows,
               hasAppendRow,
               fillHandle,
-              rows
+              rows,
+              fillHandleTheme,
           )
         : undefined;
 

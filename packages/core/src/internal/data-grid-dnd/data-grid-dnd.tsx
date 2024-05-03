@@ -442,6 +442,7 @@ const DataGridDnd: React.FunctionComponent<DataGridDndProps> = p => {
             ref={gridRef}
             onGridDrawn={p.onGridDrawn}
             disableHeaderVerticalBorder={p.disableHeaderVerticalBorder}
+            fillHandleTheme={p.fillHandleTheme}
         />
     );
 };

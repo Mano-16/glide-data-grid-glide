@@ -910,6 +910,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         scrollToActiveCell = true,
         disableHeaderVerticalBorder,
         drawFocusRing: drawFocusRingIn = true,
+        fillHandleTheme,
     } = p;
 
     const drawFocusRing = drawFocusRingIn === "no-editor" ? overlay === undefined : drawFocusRingIn;
@@ -2286,7 +2287,6 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             setScrollDir(undefined);
             isActivelyDraggingHeader.current = false;
 
-            if (isOutside) return;
 
             if (
                 mouse?.fillHandle === true &&
@@ -2305,6 +2305,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 setGridSelection(newRange, true);
                 return;
             }
+
+            if (isOutside) return;
 
             const [col, row] = args.location;
             const [lastMouseDownCol, lastMouseDownRow] = lastMouseSelectLocation.current ?? [];
@@ -4197,6 +4199,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                     onGridDrawn={onGridDrawn}
                     resizeIndicator={resizeIndicator}
                     disableHeaderVerticalBorder={disableHeaderVerticalBorder}
+                    fillHandleTheme={fillHandleTheme}
                 />
                 {renameGroupNode}
                 {overlay !== undefined && (

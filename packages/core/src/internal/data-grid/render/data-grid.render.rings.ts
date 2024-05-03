@@ -2,7 +2,7 @@
 /* eslint-disable unicorn/no-for-loop */
 import { type GridSelection, type InnerGridCell, type Item } from "../data-grid-types.js";
 import { getStickyWidth, type MappedGridColumn, computeBounds, getFreezeTrailingHeight } from "./data-grid-lib.js";
-import { type FullTheme } from "../../../common/styles.js";
+import { type FillHandleTheme, type FullTheme } from "../../../common/styles.js";
 import { blend, withAlpha } from "../color-parser.js";
 import { hugRectToTarget, intersectRect, rectContains, splitRectIntoRegions } from "../../../common/math.js";
 import { getRowSpanBounds, getSpanBounds, walkColumns, walkRowsInCol } from "./data-grid-render.walk.js";
@@ -190,7 +190,8 @@ export function drawFillHandle(
     freezeTrailingRows: number,
     hasAppendRow: boolean,
     fillHandle: boolean,
-    rows: number
+    rows: number,
+    fillHandleTheme: FillHandleTheme
 ): (() => void) | undefined {
     if (selectedCell.current === undefined) return undefined;
 
@@ -281,9 +282,11 @@ export function drawFillHandle(
                                 ctx.clip();
                             }
                             ctx.beginPath();
-                            ctx.rect(cellX + cellWidth - 4, drawY + cellHeight - 4, 4, 4);
-                            ctx.fillStyle = col.themeOverride?.accentColor ?? theme.accentColor;
-                            ctx.fill();
+                            const size = fillHandleTheme?.size ?? 4;
+                            const offset = fillHandleTheme?.drawMode === "overlap" ? 2 : 1;
+                            ctx.rect(cellX + cellWidth - (size / offset), drawY + cellHeight - (size / offset), size, size);
+                            ctx.fillStyle = fillHandleTheme?.color ?? col.themeOverride?.accentColor ?? theme.accentColor;
+                            ctx.fill();            
                         };
                     }
                     return drawHandleCb !== undefined;

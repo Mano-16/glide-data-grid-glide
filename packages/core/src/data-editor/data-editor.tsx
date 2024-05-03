@@ -2287,7 +2287,6 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
             setScrollDir(undefined);
             isActivelyDraggingHeader.current = false;
 
-            if (isOutside) return;
 
             if (
                 mouse?.fillHandle === true &&
@@ -2306,6 +2305,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 setGridSelection(newRange, true);
                 return;
             }
+
+            if (isOutside) return;
 
             const [col, row] = args.location;
             const [lastMouseDownCol, lastMouseDownRow] = lastMouseSelectLocation.current ?? [];

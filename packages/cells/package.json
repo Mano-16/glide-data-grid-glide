@@ -1,6 +1,6 @@
 {
     "name": "@lumel/glide-data-grid-cells",
-    "version": "6.0.4-alpha9",
+    "version": "6.0.4-alpha10",
     "description": "Extra cells for glide-data-grid",
     "sideEffects": [
         "**/*.css"
@@ -50,7 +50,7 @@
         "canvas"
     ],
     "dependencies": {
-        "@lumel/glide-data-grid": "6.0.4-alpha9",
+        "@lumel/glide-data-grid": "6.0.4-alpha10",
         "@linaria/react": "^4.5.3",
         "@toast-ui/editor": "3.1.10",
         "@toast-ui/react-editor": "3.1.10",

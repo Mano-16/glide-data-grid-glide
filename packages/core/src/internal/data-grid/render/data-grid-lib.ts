@@ -644,7 +644,6 @@ export function drawTextCell(
 
     const { x, y, width: w, height: h } = rect;
     allowWrapping = allowWrapping ?? false;
-    allowWrapping = true;
 
     if (!allowWrapping) {
         data = truncateString(data, w);

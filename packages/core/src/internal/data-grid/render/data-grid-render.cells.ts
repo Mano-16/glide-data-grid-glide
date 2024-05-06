@@ -320,7 +320,7 @@ export function drawCells(
                         );
                     const rowSpanIsHighlighted =
                     cell.rowSpan !== undefined &&
-                    selection.columns.some(
+                    selection.rows.some(
                         index => cell.rowSpan !== undefined && index >= cell.rowSpan[0] && index <= cell.rowSpan[1] //alloc
                     );
                     if (isSelected && !isFocused && drawFocus) {

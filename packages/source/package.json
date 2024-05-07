@@ -1,6 +1,6 @@
 {
     "name": "@lumel/glide-data-grid-source",
-    "version": "6.0.4-alpha10",
+    "version": "6.0.4-alpha11",
     "description": "Useful data source hooks for Glide Data Grid",
     "sideEffects": false,
     "type": "module",
@@ -42,7 +42,7 @@
         "canvas"
     ],
     "dependencies": {
-        "@lumel/glide-data-grid": "6.0.4-alpha10"
+        "@lumel/glide-data-grid": "6.0.4-alpha11"
     },
     "peerDependencies": {
         "lodash": "^4.17.19",

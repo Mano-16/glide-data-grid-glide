@@ -60,6 +60,7 @@ export function parseToRgba(color: string): readonly [number, number, number, nu
 
 /** @category Drawing */
 export function withAlpha(color: string, alpha: number): string {
+    if (color === 'transparent') return 'rgba(0, 0, 0, 0)';
     const [r, g, b] = parseToRgba(color);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

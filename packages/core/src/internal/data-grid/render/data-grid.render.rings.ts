@@ -132,6 +132,9 @@ export function drawHighlightRings(
                         ctx.setLineDash([]);
                         dashed = false;
                     }
+                    if (theme.borderColor === 'transparent') {
+                        ctx.strokeStyle = 'transparent';
+                    }
                     ctx.strokeStyle =
                         s.style === "solid-outline"
                             ? blend(blend(s.color, theme.borderColor), theme.bgCell)

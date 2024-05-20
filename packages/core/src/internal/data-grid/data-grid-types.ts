@@ -214,6 +214,7 @@ export type InnerColumnExtension = {
     alwaysShowHeaderCheckbox?: boolean | undefined;
     headerRowMarkerTheme?: Partial<Theme>;
     headerRowMarkerAlwaysVisible?: boolean;
+    headerRowMarkerDisabled?: boolean;
 };
 
 /** @category Columns */

@@ -465,7 +465,7 @@ export function prepTextCell(
 
 /** @category Drawing */
 export function drawTextCellExternal( 
-    args: BaseDrawArgs,
+    args: Pick<BaseDrawArgs, 'rect' | 'ctx' | 'theme'>,
     data: string,
     contentAlign?: BaseGridCell["contentAlign"],
     allowWrapping?: boolean,

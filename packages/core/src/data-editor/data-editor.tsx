@@ -923,6 +923,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     const rowMarkerTheme = rowMarkersObj?.theme ?? p.rowMarkerTheme;
     const headerRowMarkerTheme = rowMarkersObj?.headerTheme;
     const headerRowMarkerAlwaysVisible = rowMarkersObj?.headerAlwaysVisible;
+    const headerRowMarkerDisabled = rowSelect !== "multi";
     const rowMarkerCheckboxStyle = rowMarkersObj?.checkboxStyle ?? "square";
     const alwaysShowHeaderCheckbox = rowMarkersObj?.alwaysShowHeaderCheckbox ?? false;
     const onActionClick = rowMarkersObj?.onActionClick;
@@ -1170,7 +1171,8 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 rowMarkerChecked,
                 headerRowMarkerTheme,
                 headerRowMarkerAlwaysVisible,
-                alwaysShowHeaderCheckbox
+                alwaysShowHeaderCheckbox,
+                headerRowMarkerDisabled,
             },
             ...columns,
         ];
@@ -1184,6 +1186,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
         headerRowMarkerTheme,
         headerRowMarkerAlwaysVisible,
         alwaysShowHeaderCheckbox,
+        headerRowMarkerDisabled,
     ]);
 
     const visibleRegionRef = React.useRef<VisibleRegion>({
@@ -1857,7 +1860,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                         } else {
                             setSelectedRows(CompactSelection.fromSingleSelection(newSlice), undefined, isMultiRow, args);
                         }
-                    } else if (isMultiRow || args.isTouch || rowSelectionMode === "multi") {
+                    } else if (rowSelect === "multi" && (isMultiRow || args.isTouch || rowSelectionMode === "multi")) {
                         if (isSelected) {
                             setSelectedRows(selectedRows.remove(row), undefined, true, args);
                         } else {

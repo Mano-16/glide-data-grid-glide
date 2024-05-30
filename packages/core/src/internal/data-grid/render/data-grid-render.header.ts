@@ -539,7 +539,7 @@ function drawHeaderInner(
     isRtl: boolean,
     headerLayout: HeaderLayout
 ) {
-    if (c.rowMarker !== undefined) {
+    if (c.rowMarker !== undefined && c.headerRowMarkerDisabled !== true) {
         const checked = c.rowMarkerChecked;
         const alwaysShowHeaderCheckbox = c.alwaysShowHeaderCheckbox ?? false;
         if (alwaysShowHeaderCheckbox || c.headerRowMarkerAlwaysVisible === true) {

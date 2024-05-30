@@ -48,6 +48,7 @@ export function useMappedColumns(
                     alwaysShowHeaderCheckbox: c.alwaysShowHeaderCheckbox,
                     headerRowMarkerTheme: c.headerRowMarkerTheme,
                     headerRowMarkerAlwaysVisible: c.headerRowMarkerAlwaysVisible,
+                    headerRowMarkerDisabled: c.headerRowMarkerDisabled,
                 })
             ),
         [columns, freezeColumns]
@@ -464,7 +465,7 @@ export function prepTextCell(
 
 /** @category Drawing */
 export function drawTextCellExternal( 
-    args: BaseDrawArgs,
+    args: Pick<BaseDrawArgs, 'rect' | 'ctx' | 'theme'>,
     data: string,
     contentAlign?: BaseGridCell["contentAlign"],
     allowWrapping?: boolean,
@@ -867,7 +868,7 @@ export function computeBounds(
         height: 0,
     };
 
-    if (col >= mappedColumns.length || row >= rows || row < -2 || col < 0) {
+    if (col >= mappedColumns.length || row >= rows || col < 0) {
         return result;
     }
 

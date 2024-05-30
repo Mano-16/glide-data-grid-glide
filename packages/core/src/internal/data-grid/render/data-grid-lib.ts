@@ -868,7 +868,7 @@ export function computeBounds(
         height: 0,
     };
 
-    if (col >= mappedColumns.length || row >= rows || row < -2 || col < 0) {
+    if (col >= mappedColumns.length || row >= rows || col < 0) {
         return result;
     }
 

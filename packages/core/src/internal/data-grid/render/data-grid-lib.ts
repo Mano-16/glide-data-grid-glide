@@ -627,6 +627,22 @@ function drawMultiLineText(
     return actualHeight;
 }
 
+export function getMultiLineTextHeight(
+    args: Pick<BaseDrawArgs, "rect" | "ctx" | "theme">,
+    data: string,
+    hyperWrapping: boolean
+) {
+    const { ctx, rect, theme } = args;
+
+    const { width } = rect;
+    const fontStyle = `${theme.fontFamily} ${theme.baseFontStyle}`;
+    const split = splitText(ctx, data, fontStyle, width - theme.cellHorizontalPadding * 2, hyperWrapping ?? false);
+    const emHeight = getEmHeight(ctx, fontStyle);
+    const lineHeight = theme.lineHeight * emHeight;
+
+    return emHeight + lineHeight * (split.length - 1);
+}
+
 /** @category Drawing */
 export function drawTextCell(
     args: Pick<BaseDrawArgs, "rect" | "ctx" | "theme">,

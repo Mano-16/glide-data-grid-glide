@@ -93,14 +93,17 @@ export type GridMouseEventArgs =
 export interface PreventableEvent {
     preventDefault: () => void;
 }
+export interface stopPropagation {
+    stopPropagation?: () => void;
+}
 /** @category Types */
-export interface CellClickedEventArgs extends GridMouseCellEventArgs, PreventableEvent {}
+export interface CellClickedEventArgs extends GridMouseCellEventArgs,stopPropagation, PreventableEvent {}
 
 /** @category Types */
-export interface HeaderClickedEventArgs extends GridMouseHeaderEventArgs, PreventableEvent {}
+export interface HeaderClickedEventArgs extends GridMouseHeaderEventArgs, stopPropagation, PreventableEvent {}
 
 /** @category Types */
-export interface GroupHeaderClickedEventArgs extends GridMouseGroupHeaderEventArgs, PreventableEvent {}
+export interface GroupHeaderClickedEventArgs extends GridMouseGroupHeaderEventArgs, stopPropagation, PreventableEvent {}
 
 export interface FillPatternEventArgs extends PreventableEvent {
     patternSource: Rectangle;

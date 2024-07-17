@@ -349,11 +349,11 @@ export interface DataEditorProps extends Props, Pick<DataGridSearchProps, "image
      */
     readonly rowMarkerTheme?: Partial<Theme>;
 
-     /** 
-      * Enable row reorder for first column 
+    /**
+     * Enable row reorder for first column
      * @group Style
      */
-     readonly enableRowReordering?: boolean;
+    readonly enableRowReordering?: boolean;
 
     /** Sets the width of the data grid.
      * @group Style
@@ -537,7 +537,7 @@ export interface DataEditorProps extends Props, Pick<DataGridSearchProps, "image
              * @deprecated
              */
             freezeRegion?: Rectangle;
-            
+
             scrollTop?: number;
             scrollLeft?: number;
 
@@ -662,8 +662,8 @@ export interface DataEditorProps extends Props, Pick<DataGridSearchProps, "image
      * The Callback to handle auto size column.
      */
     readonly onColumnAutoSize?: (col: number, cells: { start: number, count: number }) => number;
-    
-     /** Emitted when a header is double clicked.
+
+    /** Emitted when a header is double clicked.
      * @group Events
      */
     readonly onColumnHeaderDblClick?: (colIndex: number, event: HeaderClickedEventArgs) => void;
@@ -672,7 +672,7 @@ export interface DataEditorProps extends Props, Pick<DataGridSearchProps, "image
      * @group Events
      */
     readonly onColumnGroupHeaderDblClick?: (colIndex: number, event: GroupHeaderClickedEventArgs) => void;
-    
+
     /* Custom predicate function to decide whether the click event occurred outside the grid
      * Especially used when custom editor is opened with the portal and is outside the grid, but there is no possibility
      * to add a class "click-outside-ignore"
@@ -3457,17 +3457,17 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
     );
 
     const onContextMenu = React.useCallback(
-        (args: GridMouseEventArgs, preventDefault: () => void) => {
+        (args: GridMouseEventArgs, preventDefault: () => void, stopPropagation: () => void) => {
             const adjustedCol = args.location[0] - rowMarkerOffset;
             if (args.kind === "header") {
-                onHeaderContextMenu?.(adjustedCol, { ...args, preventDefault });
+                onHeaderContextMenu?.(adjustedCol, { ...args, preventDefault, stopPropagation });
             }
 
             if (args.kind === groupHeaderKind) {
                 if (adjustedCol < 0) {
                     return;
                 }
-                onGroupHeaderContextMenu?.(adjustedCol, { ...args, preventDefault });
+                onGroupHeaderContextMenu?.(adjustedCol, { ...args, preventDefault, stopPropagation });
             }
 
             if (args.kind === "cell") {
@@ -3475,6 +3475,7 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 onCellContextMenu?.([adjustedCol, row], {
                     ...args,
                     preventDefault,
+                    stopPropagation
                 });
 
                 if (!gridSelectionHasItem(gridSelection, args.location)) {

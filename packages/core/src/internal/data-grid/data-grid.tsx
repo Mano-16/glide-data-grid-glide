@@ -169,7 +169,7 @@ export interface DataGridProps {
     readonly onMouseMove: (args: GridMouseEventArgs) => void;
     readonly onMouseDown: (args: GridMouseEventArgs) => void;
     readonly onMouseUp: (args: GridMouseEventArgs, isOutside: boolean) => void;
-    readonly onContextMenu: (args: GridMouseEventArgs, preventDefault: () => void) => void;
+    readonly onContextMenu: (args: GridMouseEventArgs, preventDefault: () => void, stopPropagation:()=>void) => void;
 
     readonly onCanvasFocused: () => void;
     readonly onCanvasBlur: () => void;
@@ -1418,7 +1418,7 @@ const DataGrid: React.ForwardRefRenderFunction<DataGridRef, DataGridProps> = (p,
             const args = getMouseArgsForPosition(canvas, ev.clientX, ev.clientY, ev);
             onContextMenu(args, () => {
                 if (ev.cancelable) ev.preventDefault();
-            });
+            },()=>ev.stopPropagation());
         },
         [eventTargetRef, getMouseArgsForPosition, onContextMenu]
     );
